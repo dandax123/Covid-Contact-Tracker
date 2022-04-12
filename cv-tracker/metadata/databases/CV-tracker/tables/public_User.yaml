@@ -1,0 +1,25 @@
+table:
+  name: User
+  schema: public
+array_relationships:
+- name: Contacts
+  using:
+    foreign_key_constraint_on:
+      column: secondary_user
+      table:
+        name: Contact
+        schema: public
+- name: CovidTests
+  using:
+    foreign_key_constraint_on:
+      column: user_id
+      table:
+        name: CovidTest
+        schema: public
+- name: Devices
+  using:
+    foreign_key_constraint_on:
+      column: user_id
+      table:
+        name: Device
+        schema: public

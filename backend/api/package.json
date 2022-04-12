@@ -1,0 +1,27 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "ts-node": "^10.7.0",
+    "ts-node-dev": "^1.1.8"
+  },
+  "scripts": {
+    "dev": "NODE_ENV=development ts-node-dev index.ts",
+    "start": "NODE_ENV=production ts-node index.ts",
+    "test": "echo 'no test'",
+    "lint": "eslint . --ext .ts",
+    "deploy": "NODE_ENV=production pm2 reload frappeBIRS",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "compile": "npx tsc --noEmit false",
+    "build": "yarn install &&  npx rimraf build && yarn compile"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^17.0.23",
+    "typescript": "^4.6.3"
+  }
+}

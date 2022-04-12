@@ -1,0 +1,18 @@
+table:
+  name: Contact
+  schema: public
+object_relationships:
+- name: Contacted_Users
+  using:
+    foreign_key_constraint_on: secondary_user
+event_triggers:
+- definition:
+    enable_manual: false
+    insert:
+      columns: "*"
+  name: new_contacty
+  retry_conf:
+    interval_sec: 10
+    num_retries: 0
+    timeout_sec: 60
+  webhook: http://backend:7000/v1/new_contact

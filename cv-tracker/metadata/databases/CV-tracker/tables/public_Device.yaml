@@ -1,0 +1,7 @@
+table:
+  name: Device
+  schema: public
+object_relationships:
+- name: Owners
+  using:
+    foreign_key_constraint_on: user_id
