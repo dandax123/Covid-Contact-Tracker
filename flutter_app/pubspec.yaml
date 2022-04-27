@@ -19,6 +19,11 @@ dependencies:
   cupertino_icons: ^1.0.2
   smooth_page_indicator: ^1.0.0+2
   shared_preferences: ^2.0.13
+  flutter_blue: ^0.8.0
+  redux: ^5.0.0
+  flutter_redux: ^0.9.0
+  graphql_flutter: ^5.0.0
+  flutter_hooks: ^0.18.3
 
 dev_dependencies:
   flutter_test:
