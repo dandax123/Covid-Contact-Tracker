@@ -1,8 +1,0 @@
-{
-  "name": "cv-tracker",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:dandax123/cv-tracker.git",
-  "author": "dandax123 <dandaoluks@gmail.com>",
-  "license": "MIT"
-}

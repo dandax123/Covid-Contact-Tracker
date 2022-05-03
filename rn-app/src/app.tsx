@@ -1,5 +1,10 @@
 import React, {useEffect, useState} from 'react';
-
+import {
+  Notification,
+  Notifications,
+  Registered,
+  RegistrationError,
+} from 'react-native-notifications';
 import {
   SafeAreaView,
   StyleSheet,
@@ -134,6 +139,38 @@ const Entry = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobileSetup]);
+  useEffect(() => {
+    // Request permissions on iOS, refresh token on Android
+    Notifications.registerRemoteNotifications();
+
+    Notifications.events().registerRemoteNotificationsRegistered(
+      (event: Registered) => {
+        // TODO: Send the token to my server so it could send back push notifications...
+        console.log('Device Token Received', event.deviceToken);
+      },
+    );
+    Notifications.events().registerRemoteNotificationsRegistrationFailed(
+      (event: RegistrationError) => {
+        console.error(event);
+      },
+    );
+
+    Notifications.events().registerNotificationReceivedForeground(
+      (notification: Notification, completion) => {
+        console.log(
+          `Notification received in foreground: ${notification.title} : ${notification.body}`,
+        );
+        completion({alert: false, sound: false, badge: false});
+      },
+    );
+
+    Notifications.events().registerNotificationOpened(
+      (notification: Notification, completion) => {
+        console.log(`Notification opened: ${notification.payload}`);
+        completion();
+      },
+    );
+  }, []);
   const addDevice = (
     _uuid: string,
     _name: string,

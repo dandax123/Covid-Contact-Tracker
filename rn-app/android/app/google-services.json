@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "485907788145",
+    "project_id": "cv-tracker-e5977",
+    "storage_bucket": "cv-tracker-e5977.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485907788145:android:9fccbbba490d91880006d0",
+        "android_client_info": {
+          "package_name": "com.cvtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "485907788145-ijnht80aflu2fka7amn8mbkljknbnvhu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJRGMky_WtrtPW1WwlXf7QD7TZMpxpV_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "485907788145-ijnht80aflu2fka7amn8mbkljknbnvhu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
