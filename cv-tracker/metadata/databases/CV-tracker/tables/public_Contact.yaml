@@ -2,7 +2,10 @@ table:
   name: Contact
   schema: public
 object_relationships:
-- name: Contacted_Users
+- name: User
+  using:
+    foreign_key_constraint_on: primary_user
+- name: userBySecondaryUser
   using:
     foreign_key_constraint_on: secondary_user
 event_triggers:
@@ -10,7 +13,7 @@ event_triggers:
     enable_manual: false
     insert:
       columns: "*"
-  name: new_contacty
+  name: new_contact
   retry_conf:
     interval_sec: 10
     num_retries: 0
