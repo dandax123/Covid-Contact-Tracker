@@ -9,23 +9,30 @@ export const FETCH_USERS = gql`
 `;
 
 export const CREATE_NEW_USER = gql`
-  mutation new_user(
-    $user_id: uuid!
-    $device_id: String!
-    $bluetooth_status: Boolean!
-    $notif_status: Boolean!
-  ) {
+  mutation new_user($user_id: uuid!) {
+    insert_User_one(object: {user_id: $user_id, covid_status: false}) {
+      user_id
+    }
+  }
+`;
+
+export const CHECK_USER_EXIST = gql`
+  query check_user_exist($user_id: uuid!) {
+    User_aggregate(where: {user_id: {_eq: $user_id}}) {
+      aggregate {
+        count
+      }
+    }
+  }
+`;
+
+export const CREATE_NEW_USER_WITH_DEVICE = gql`
+  mutation new_user($user_id: uuid!, $device_id: String!) {
     insert_User_one(
       object: {
         user_id: $user_id
         covid_status: false
-        Devices: {
-          data: {
-            device_id: $device_id
-            bluetooth_status: $bluetooth_status
-            notification_status: $notif_status
-          }
-        }
+        Devices: {data: {device_id: $device_id}}
       }
     ) {
       user_id
