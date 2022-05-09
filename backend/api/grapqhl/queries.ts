@@ -37,6 +37,6 @@ export const get_user_devices: QueryType = {
         },
       },
     },
-    fields: ["device_id", "notification_status"],
+    fields: ["device_id"],
   },
 };

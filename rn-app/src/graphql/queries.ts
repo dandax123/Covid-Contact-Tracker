@@ -39,3 +39,13 @@ export const CREATE_NEW_USER_WITH_DEVICE = gql`
     }
   }
 `;
+
+export const ADD_NEW_CONTACT = gql`
+  mutation add_new_contact($primary_user: uuid!, $secondary_user: uuid!) {
+    insert_Contact_one(
+      object: {primary_user: $primary_user, secondary_user: $secondary_user}
+    ) {
+      contact_id
+    }
+  }
+`;

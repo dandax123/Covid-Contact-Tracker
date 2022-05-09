@@ -27,10 +27,12 @@ import useBluetoothState from './store/useBluetoothState';
 import useDevice from './store/useDevices';
 import {useMutation, useQuery} from '@apollo/client';
 import {CHECK_USER_EXIST, CREATE_NEW_USER_WITH_DEVICE} from './graphql/queries';
+import {Device} from './utils/types';
 
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
 const MANUF_DATA = [1, 0];
+const c15_MINS = 1000 * 60 * 15;
 
 BLEAdvertiser.setCompanyId(APPLE_ID);
 
@@ -129,7 +131,7 @@ const Entry = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const start = async () => {
+  const start = () => {
     console.log(uuid, 'Registering Listener');
     const eventEmitter = new NativeEventEmitter(NativeModules.BLEAdvertiser);
 
@@ -138,13 +140,10 @@ const Entry = () => {
       if (event.serviceUuids) {
         for (let i = 0; i < event.serviceUuids.length; i++) {
           if (event.serviceUuids[i] && event.serviceUuids[i].endsWith('00')) {
-            // addDevice(
-            //   event.serviceUuids[i],
-            //   event.deviceName,
-            //   event.deviceAddress,
-            //   event.rssi,
-            //   new Date(),
-            // );
+            handle_device_discovery({
+              uuid: event.serviceUuids[i],
+              contact_time: new Date(),
+            });
           }
         }
       }
@@ -197,6 +196,22 @@ const Entry = () => {
     ).toUpperCase();
   };
 
+  const handle_device_discovery = (device: Device) => {
+    //new_contact
+    const is_old_contact = devices.find(x => x.uuid === device.uuid);
+    if (is_old_contact) {
+      //seen in the last 15 minutes, should discard
+      const new_time = new Date();
+      if (
+        is_old_contact.contact_time.getTime() - new_time.getTime() <
+        c15_MINS
+      ) {
+        //discard
+      }
+    } else {
+    }
+  };
+
   return (
     <SafeAreaView>
       <View style={styles.body}>
@@ -228,9 +243,7 @@ const Entry = () => {
           <FlatList
             data={devices}
             renderItem={({item}) => (
-              <Text style={styles.itemPastConnections}>
-                {short(item.uuid)} {item.mac} {item.rssi}
-              </Text>
+              <Text style={styles.itemPastConnections}>{short(item.uuid)}</Text>
             )}
             keyExtractor={item => item.uuid}
           />

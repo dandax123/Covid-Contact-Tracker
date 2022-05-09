@@ -22,12 +22,14 @@ router.post("/new_contact", async (req: Request, res: Response) => {
     const devices = await get_user_device(user_to_warn);
     await sendFcmNotification(
       devices,
-      "You are in contact with a Covid Positive Person, we suggest you take a covid test"
+      "You are in contact with a Covid Positive Person, we suggest you take a covid test !!"
     );
     return res.json({ success: true });
   } catch (err) {
     return res.status(400).json({ success: false });
   }
 });
+
+router.post("/new_cvtest", async (req: Request, res: Response) => {});
 
 export default router;

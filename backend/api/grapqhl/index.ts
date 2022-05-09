@@ -29,14 +29,12 @@ export const get_user_device = async (user: string): Promise<string[]> => {
       },
     };
     const y: {
-      data: { Device: [{ device_id: string; notification_status: boolean }] };
+      data: { Device: [{ device_id: string }] };
     } = await gotQl.query("http://localhost:8080/v1/graphql", {
       ...get_user_devices,
       variables: { ...data },
     });
-    return y.data.Device.filter((y) => y.notification_status).map(
-      (x) => x.device_id
-    );
+    return y.data.Device.map((x) => x.device_id);
   } catch (err) {
     console.error(err);
     return [];
