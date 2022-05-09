@@ -14,13 +14,17 @@ import {
   FlatList,
 } from 'react-native';
 
-import {Alert, Platform} from 'react-native';
 import {NativeEventEmitter, NativeModules} from 'react-native';
 
 import update from 'immutability-helper';
 import BLEAdvertiser from 'react-native-ble-advertiser';
-import {PermissionsAndroid} from 'react-native';
 import {getAppKey} from './utils/key_storage';
+
+import BluetoothStateManager from 'react-native-bluetooth-state-manager';
+
+import {requestLocationPermission} from './utils';
+import Home from './pages/home';
+import useBluetoothState from './store/useBluetoothState';
 
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
@@ -35,72 +39,6 @@ type Device = {
   start: Date;
   end: Date;
 };
-const requestLocationPermission = async (): Promise<{
-  location: boolean;
-  bluetooth: boolean;
-}> => {
-  try {
-    let result = {
-      location: false,
-      bluetooth: false,
-    };
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'BLE Avertiser Example App',
-          message: 'Example App access to your location ',
-          buttonPositive: 'Ok',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        result.location = true;
-        console.log('[Permissions]', 'Location Permission granted');
-      } else {
-        result.location = false;
-        console.log('[Permissions]', 'Location Permission denied');
-      }
-    }
-
-    const blueoothActive = await BLEAdvertiser.getAdapterState()
-      .then(a_result => {
-        console.log('[Bluetooth]', 'Bluetooth Status', a_result);
-        return a_result === 'STATE_ON';
-      })
-      .catch(_e => {
-        console.error('[Bluetooth]', 'Bluetooth Not Enabled');
-        return false;
-      });
-
-    if (!blueoothActive) {
-      await Alert.alert(
-        'Example requires bluetooth to be enabled',
-        'Would you like to enable Bluetooth?',
-        [
-          {
-            text: 'Yes',
-            onPress: () => {
-              BLEAdvertiser.enableAdapter();
-              result.bluetooth = true;
-            },
-          },
-          {
-            text: 'No',
-            onPress: () => {
-              result.bluetooth = false;
-            },
-            style: 'cancel',
-          },
-        ],
-      );
-    } else {
-      result.bluetooth = true;
-    }
-    return result;
-  } catch (err) {
-    throw new Error(err);
-  }
-};
 
 const Entry = () => {
   const [state, setState] = useState<{
@@ -112,20 +50,22 @@ const Entry = () => {
     isLogging: false,
     devicesFound: [],
   });
+
+  const {changeBluetoothState} = useBluetoothState();
   const [mobileSetup, setMobileSetup] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
+      const app_key = await getAppKey();
+      setState({
+        ...state,
+        uuid: app_key,
+      });
       if (!mobileSetup) {
         const result = await requestLocationPermission();
         if (result.bluetooth && result.location) {
-          const app_key = await getAppKey();
-          console.log(app_key);
-          setState({
-            ...state,
-            uuid: app_key,
-          });
           setMobileSetup(true);
+          changeBluetoothState(true);
         }
       }
     };
@@ -138,7 +78,7 @@ const Entry = () => {
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobileSetup]);
+  }, [mobileSetup, state.uuid]);
   useEffect(() => {
     // Request permissions on iOS, refresh token on Android
     Notifications.registerRemoteNotifications();
@@ -171,6 +111,21 @@ const Entry = () => {
       },
     );
   }, []);
+
+  useEffect(() => {
+    BluetoothStateManager.onStateChange(y => {
+      switch (y) {
+        case 'PoweredOn':
+          changeBluetoothState(true);
+          break;
+        default:
+          changeBluetoothState(false);
+          break;
+      }
+    }, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const addDevice = (
     _uuid: string,
     _name: string,
@@ -329,6 +284,9 @@ const Entry = () => {
             style={styles.startLoggingButtonTouchable}>
             <Text style={styles.startLoggingButtonText}>Clear Devices</Text>
           </TouchableOpacity>
+        </View>
+        <View>
+          <Home />
         </View>
       </View>
     </SafeAreaView>
