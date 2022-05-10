@@ -2,7 +2,7 @@ import create from 'zustand';
 import {combine} from 'zustand/middleware';
 import {Device} from '../utils/types';
 
-// import update from 'immutability-helper';
+import update from 'immutability-helper';
 type DeviceState = {
   uuid: string;
   token_id: string;
@@ -23,6 +23,17 @@ const useDevice = create(
       }),
     add_device: (device: Device) => {
       set({...get(), devices: [...get().devices, device]});
+    },
+    update_device: (device: Device) => {
+      const index = get().devices.findIndex(y => y.uuid === device.uuid);
+      set({
+        ...get(),
+        devices: update(get().devices, {
+          [index]: {
+            contact_time: device.contact_time,
+          },
+        }),
+      });
     },
   })),
 );

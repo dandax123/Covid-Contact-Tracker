@@ -44,7 +44,13 @@ const Entry = () => {
   const [createNewContact] = useMutation(ADD_NEW_CONTACT);
   const {changeDeviceState, bluetooth_active, location_active} =
     useBluetoothState();
-  const {setup: deviceSetup, uuid, devices} = useDevice();
+  const {
+    setup: deviceSetup,
+    uuid,
+    devices,
+    add_device,
+    update_device,
+  } = useDevice();
   const [state, setState] = useState({logging: false});
   const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
     variables: {
@@ -217,14 +223,17 @@ const Entry = () => {
         c15_MINS
       ) {
         //discard
+      } else {
+        update_device(device);
       }
     } else {
-      // createNewContact({
-      //   variables: {
-      //     primary_user: uuid,
-      //     secondary_user: device.uuid,
-      //   },
-      // });
+      add_device(device);
+      createNewContact({
+        variables: {
+          primary_user: uuid,
+          secondary_user: device.uuid,
+        },
+      });
     }
   };
 
