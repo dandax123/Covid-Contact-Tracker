@@ -21,6 +21,9 @@ const useDevice = create(
         ...get(),
         [key]: value,
       }),
+    add_device: (device: Device) => {
+      set({...get(), devices: [...get().devices, device]});
+    },
   })),
 );
 

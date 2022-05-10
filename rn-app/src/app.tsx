@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Notification,
   Notifications,
@@ -14,61 +14,131 @@ import {
   FlatList,
 } from 'react-native';
 
+import {Alert, Platform} from 'react-native';
 import {NativeEventEmitter, NativeModules} from 'react-native';
 
+import update from 'immutability-helper';
 import BLEAdvertiser from 'react-native-ble-advertiser';
+import {PermissionsAndroid} from 'react-native';
 import {getAppKey} from './utils/key_storage';
-
-import BluetoothStateManager from 'react-native-bluetooth-state-manager';
-
-import {requestLocationPermission} from './utils';
-import Home from './pages/home';
-import useBluetoothState from './store/useBluetoothState';
-import useDevice from './store/useDevices';
-import {useMutation, useQuery} from '@apollo/client';
-import {CHECK_USER_EXIST, CREATE_NEW_USER_WITH_DEVICE} from './graphql/queries';
-import {Device} from './utils/types';
 
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
 const MANUF_DATA = [1, 0];
-const c15_MINS = 1000 * 60 * 15;
 
 BLEAdvertiser.setCompanyId(APPLE_ID);
+type Device = {
+  uuid: string;
+  name: string;
+  mac: string;
+  rssi: string;
+  start: Date;
+  end: Date;
+};
+const requestLocationPermission = async (): Promise<{
+  location: boolean;
+  bluetooth: boolean;
+}> => {
+  try {
+    let result = {
+      location: false,
+      bluetooth: false,
+    };
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'BLE Avertiser Example App',
+          message: 'Example App access to your location ',
+          buttonPositive: 'Ok',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        result.location = true;
+        console.log('[Permissions]', 'Location Permission granted');
+      } else {
+        result.location = false;
+        console.log('[Permissions]', 'Location Permission denied');
+      }
+    }
+
+    const blueoothActive = await BLEAdvertiser.getAdapterState()
+      .then(a_result => {
+        console.log('[Bluetooth]', 'Bluetooth Status', a_result);
+        return a_result === 'STATE_ON';
+      })
+      .catch(_e => {
+        console.error('[Bluetooth]', 'Bluetooth Not Enabled');
+        return false;
+      });
+
+    if (!blueoothActive) {
+      await Alert.alert(
+        'Example requires bluetooth to be enabled',
+        'Would you like to enable Bluetooth?',
+        [
+          {
+            text: 'Yes',
+            onPress: () => {
+              BLEAdvertiser.enableAdapter();
+              result.bluetooth = true;
+            },
+          },
+          {
+            text: 'No',
+            onPress: () => {
+              result.bluetooth = false;
+            },
+            style: 'cancel',
+          },
+        ],
+      );
+    } else {
+      result.bluetooth = true;
+    }
+    return result;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
 
 const Entry = () => {
-  const [createNewUser] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
-
-  const {changeBluetoothState, bluetooth_active} = useBluetoothState();
-  const {setup: deviceSetup, uuid, devices} = useDevice();
-  const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
-    variables: {
-      user_id: uuid,
-    },
+  const [state, setState] = useState<{
+    uuid: string;
+    isLogging: boolean;
+    devicesFound: Device[];
+  }>({
+    uuid: '',
+    isLogging: false,
+    devicesFound: [],
   });
+  const [mobileSetup, setMobileSetup] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
-      const app_key = await getAppKey();
-      deviceSetup('uuid', app_key);
-
-      if (!bluetooth_active) {
+      if (!mobileSetup) {
         const result = await requestLocationPermission();
         if (result.bluetooth && result.location) {
-          changeBluetoothState(true);
+          const app_key = await getAppKey();
+          console.log(app_key);
+          setState({
+            ...state,
+            uuid: app_key,
+          });
+          setMobileSetup(true);
         }
       }
     };
     setup();
 
     () => {
-      if (false) {
+      if (state.isLogging) {
         stop();
       }
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bluetooth_active, uuid]);
+  }, [mobileSetup]);
   useEffect(() => {
     // Request permissions on iOS, refresh token on Android
     Notifications.registerRemoteNotifications();
@@ -77,20 +147,6 @@ const Entry = () => {
       (event: Registered) => {
         // TODO: Send the token to my server so it could send back push notifications...
         console.log('Device Token Received', event.deviceToken);
-        console.log(uuid, user_exist, loading);
-        if (
-          uuid !== '' &&
-          !user_exist?.User_aggregate?.aggregate?.count &&
-          !loading
-        ) {
-          createNewUser({
-            variables: {
-              user_id: uuid,
-              device_id: event.deviceToken,
-            },
-          });
-        }
-        deviceSetup('token_id', event.deviceToken);
       },
     );
     Notifications.events().registerRemoteNotificationsRegistrationFailed(
@@ -114,25 +170,45 @@ const Entry = () => {
         completion();
       },
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uuid]);
-
-  useEffect(() => {
-    BluetoothStateManager.onStateChange(y => {
-      switch (y) {
-        case 'PoweredOn':
-          changeBluetoothState(true);
-          break;
-        default:
-          changeBluetoothState(false);
-          break;
-      }
-    }, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const addDevice = (
+    _uuid: string,
+    _name: string,
+    _mac: string,
+    _rssi: string,
+    _date: Date,
+  ) => {
+    const index = state.devicesFound.findIndex(({uuid}) => uuid == _uuid);
+    if (index < 0) {
+      setState({
+        ...state,
+        devicesFound: [
+          ...state.devicesFound,
+          {
+            uuid: _uuid,
+            name: _name,
+            mac: _mac,
+            rssi: _rssi,
+            start: _date,
+            end: _date,
+          },
+        ],
+      });
+    } else {
+      setState({
+        ...state,
+        devicesFound: update(state.devicesFound, {
+          [index]: {
+            end: {$set: _date},
+            rssi: {$set: _rssi || state.devicesFound[index].rssi},
+          },
+        }),
+      });
+    }
+  };
 
-  const start = () => {
-    console.log(uuid, 'Registering Listener');
+  const start = async () => {
+    console.log(state.uuid, 'Registering Listener');
     const eventEmitter = new NativeEventEmitter(NativeModules.BLEAdvertiser);
 
     eventEmitter.addListener('onDeviceFound', event => {
@@ -140,52 +216,64 @@ const Entry = () => {
       if (event.serviceUuids) {
         for (let i = 0; i < event.serviceUuids.length; i++) {
           if (event.serviceUuids[i] && event.serviceUuids[i].endsWith('00')) {
-            handle_device_discovery({
-              uuid: event.serviceUuids[i],
-              contact_time: new Date(),
-            });
+            addDevice(
+              event.serviceUuids[i],
+              event.deviceName,
+              event.deviceAddress,
+              event.rssi,
+              new Date(),
+            );
           }
         }
       }
     });
 
-    console.log(uuid, 'Starting Advertising');
-    if (uuid === null) {
-      // const app_key = await getAppKey();
-      // setState({...state, uuid: app_key});
+    console.log(state.uuid, 'Starting Advertising');
+    if (state.uuid === null) {
+      const app_key = await getAppKey();
+      setState({...state, uuid: app_key});
     }
-    BLEAdvertiser.broadcast(uuid, MANUF_DATA, {
+    BLEAdvertiser.broadcast(state.uuid, MANUF_DATA, {
       advertiseMode: 2,
       txPowerLevel: 2,
       connectable: false,
       includeDeviceName: false,
       includeTxPowerLevel: false,
     })
-      .then(sucess => console.log(uuid, 'Adv Successful', sucess))
-      .catch(error => console.log(uuid, 'Adv Error', error));
+      .then(sucess => console.log(state.uuid, 'Adv Successful', sucess))
+      .catch(error => console.log(state.uuid, 'Adv Error', error));
 
-    console.log(uuid, 'Starting Scanner');
+    console.log(state.uuid, 'Starting Scanner');
     BLEAdvertiser.scan(MANUF_DATA, {
       scanMode: 2,
     })
-      .then(sucess => console.log(uuid, 'Scan Successful', sucess))
-      .catch(error => console.log(uuid, 'Scan Error', error));
+      .then(sucess => console.log(state.uuid, 'Scan Successful', sucess))
+      .catch(error => console.log(state.uuid, 'Scan Error', error));
+
+    setState({
+      ...state,
+      isLogging: true,
+    });
   };
 
   const stop = () => {
-    console.log(uuid, 'Removing Listener');
+    console.log(state.uuid, 'Removing Listener');
     // onDeviceFound.remove();
     // delete onDeviceFound;
 
-    console.log(uuid, 'Stopping Broadcast');
+    console.log(state.uuid, 'Stopping Broadcast');
     BLEAdvertiser.stopBroadcast()
-      .then(sucess => console.log(uuid, 'Stop Broadcast Successful', sucess))
-      .catch(error => console.log(uuid, 'Stop Broadcast Error', error));
+      .then(sucess =>
+        console.log(state.uuid, 'Stop Broadcast Successful', sucess),
+      )
+      .catch(error => console.log(state.uuid, 'Stop Broadcast Error', error));
 
-    console.log(uuid, 'Stopping Scanning');
+    console.log(state.uuid, 'Stopping Scanning');
     BLEAdvertiser.stopScan()
-      .then(sucess => console.log(uuid, 'Stop Scan Successful', sucess))
-      .catch(error => console.log(uuid, 'Stop Scan Error', error));
+      .then(sucess => console.log(state.uuid, 'Stop Scan Successful', sucess))
+      .catch(error => console.log(state.uuid, 'Stop Scan Error', error));
+
+    setState({...state, isLogging: false});
   };
 
   const short = (str: string) => {
@@ -196,34 +284,18 @@ const Entry = () => {
     ).toUpperCase();
   };
 
-  const handle_device_discovery = (device: Device) => {
-    //new_contact
-    const is_old_contact = devices.find(x => x.uuid === device.uuid);
-    if (is_old_contact) {
-      //seen in the last 15 minutes, should discard
-      const new_time = new Date();
-      if (
-        is_old_contact.contact_time.getTime() - new_time.getTime() <
-        c15_MINS
-      ) {
-        //discard
-      }
-    } else {
-    }
-  };
-
   return (
     <SafeAreaView>
       <View style={styles.body}>
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>BLE Advertiser Demo</Text>
           <Text style={styles.sectionDescription}>
-            Broadcasting: <Text style={styles.highlight}>{uuid}</Text>
+            Broadcasting: <Text style={styles.highlight}>{state.uuid}</Text>
           </Text>
         </View>
 
         <View style={styles.sectionContainer}>
-          {true ? (
+          {state.isLogging ? (
             <TouchableOpacity
               onPress={() => stop()}
               style={styles.stopLoggingButtonTouchable}>
@@ -241,16 +313,22 @@ const Entry = () => {
         <View style={styles.sectionContainerFlex}>
           <Text style={styles.sectionTitle}>Devices Around</Text>
           <FlatList
-            data={devices}
+            data={state.devicesFound}
             renderItem={({item}) => (
-              <Text style={styles.itemPastConnections}>{short(item.uuid)}</Text>
+              <Text style={styles.itemPastConnections}>
+                {short(item.uuid)} {item.mac} {item.rssi}
+              </Text>
             )}
             keyExtractor={item => item.uuid}
           />
         </View>
 
-        <View>
-          <Home />
+        <View style={styles.sectionContainer}>
+          <TouchableOpacity
+            onPress={() => setState({...state, devicesFound: []})}
+            style={styles.startLoggingButtonTouchable}>
+            <Text style={styles.startLoggingButtonText}>Clear Devices</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
