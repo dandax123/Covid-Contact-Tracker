@@ -5,11 +5,15 @@ const useBluetoothState = create(
   combine(
     {
       bluetooth_active: false,
+      location_active: false,
     },
     set => ({
-      changeBluetoothState: (new_state: boolean) =>
+      changeDeviceState: (
+        key: 'bluetooth_active' | 'location_active',
+        new_state: boolean,
+      ) =>
         set({
-          bluetooth_active: new_state,
+          [key]: new_state,
         }),
     }),
   ),
