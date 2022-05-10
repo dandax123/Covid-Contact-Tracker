@@ -124,11 +124,16 @@ const Entry = () => {
   useEffect(() => {
     const device_state = async () => {
       await SystemSetting.isLocationEnabled().then((enable: boolean) => {
-        const s = enable ? 'On' : 'Off';
-        console.log('Current location is ' + s);
+        changeDeviceState('location_active', enable);
       });
       await SystemSetting.addLocationListener((enabled: boolean) => {
-        console.log(enabled);
+        changeDeviceState('location_active', enabled);
+      });
+      await SystemSetting.isBluetoothEnabled().then((enable: boolean) => {
+        changeDeviceState('bluetooth_active', enable);
+      });
+      await SystemSetting.addBluetoothListener((enabled: boolean) => {
+        changeDeviceState('bluetooth_active', enabled);
       });
     };
 
@@ -154,7 +159,7 @@ const Entry = () => {
         }
       }
     });
-    if (uuid !== '') {
+    if (uuid !== '' && bluetooth_active && location_active) {
       console.log(uuid, 'Starting Advertising');
       BLEAdvertiser.broadcast(uuid, MANUF_DATA, {})
         .then(sucess => console.log(uuid, 'Adv Successful', sucess))
