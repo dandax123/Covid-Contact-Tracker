@@ -40,3 +40,42 @@ export const get_user_devices: QueryType = {
     fields: ["device_id"],
   },
 };
+
+export const get_contacts_from_start_date: QueryType = {
+  operation: {
+    name: "Contact",
+    args: {
+      where: {
+        _or: [
+          { primary_user: { _eq: "$user_id" } },
+          { secondary_user: { _eq: "$user_id" } },
+        ],
+        contact_time: { _gt: "$start_day" },
+      },
+    },
+    fields: [
+      {
+        userBySecondaryUser: {
+          fields: [
+            "user_id",
+            {
+              Devices: {
+                fields: ["device_id"],
+              },
+            },
+          ],
+        },
+        User: {
+          fields: [
+            "user_id",
+            {
+              Devices: {
+                fields: ["device_id"],
+              },
+            },
+          ],
+        },
+      },
+    ],
+  },
+};

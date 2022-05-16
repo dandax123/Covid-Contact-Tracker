@@ -29,28 +29,24 @@ import {
   ADD_NEW_CONTACT,
   CHECK_USER_EXIST,
   CREATE_NEW_USER_WITH_DEVICE,
+  UPDATE_LAST_SEEN,
 } from './graphql/queries';
 import {Device} from './utils/types';
 
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
 const MANUF_DATA = [1, 0];
-const c15_MINS = 1000 * 60 * 15;
+const c15_MINS = 1000 * 60 * 10;
 
 BLEAdvertiser.setCompanyId(APPLE_ID);
 
 const Entry = () => {
   const [createNewUser] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
   const [createNewContact] = useMutation(ADD_NEW_CONTACT);
+  const [updateLastSeen] = useMutation(UPDATE_LAST_SEEN);
   const {changeDeviceState, bluetooth_active, location_active} =
     useBluetoothState();
-  const {
-    setup: deviceSetup,
-    uuid,
-    devices,
-    add_device,
-    update_device,
-  } = useDevice();
+  const {setup: deviceSetup, uuid, devices, update_device} = useDevice();
   const [state, setState] = useState({logging: false});
   const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
     variables: {
@@ -93,6 +89,7 @@ const Entry = () => {
           user_exist?.User_aggregate?.aggregate?.count === 0 &&
           !loading
         ) {
+          console.log('here');
           createNewUser({
             variables: {
               user_id: uuid,
@@ -125,7 +122,7 @@ const Entry = () => {
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uuid]);
+  }, [uuid, loading]);
 
   useEffect(() => {
     const device_state = async () => {
@@ -152,7 +149,7 @@ const Entry = () => {
     console.log(uuid, 'Registering Listener');
 
     eventEmitter.addListener('onDeviceFound', event => {
-      console.log('onDeviceFound', event);
+      // console.log('onDeviceFound', event);
       if (event.serviceUuids) {
         for (let i = 0; i < event.serviceUuids.length; i++) {
           if (event.serviceUuids[i] && event.serviceUuids[i].endsWith('00')) {
@@ -213,25 +210,32 @@ const Entry = () => {
 
   const handle_device_discovery = (device: Device) => {
     //new_contact
-    const is_old_contact = devices.find(x => x.uuid === device.uuid);
-    setState({logging: false});
+    const is_old_contact = devices.get(device.uuid);
     if (is_old_contact) {
       //seen in the last 15 minutes, should discard
-      const new_time = new Date();
-      if (
-        is_old_contact.contact_time.getTime() - new_time.getTime() <
-        c15_MINS
-      ) {
-        //discard
-      } else {
+      const timeDiff = Math.abs(
+        is_old_contact.contact_time.getTime() - device.contact_time.getTime(),
+      );
+
+      if (timeDiff > c15_MINS) {
+        console.log('here');
         update_device(device);
+        updateLastSeen({
+          variables: {
+            primary_user: uuid,
+            secondary_user: device.uuid,
+            time: device.contact_time.toISOString(),
+          },
+        });
+        //discard
       }
     } else {
-      add_device(device);
+      update_device(device);
       createNewContact({
         variables: {
           primary_user: uuid,
           secondary_user: device.uuid,
+          time: device.contact_time.toISOString(),
         },
       });
     }
@@ -266,7 +270,7 @@ const Entry = () => {
         <View style={styles.sectionContainerFlex}>
           <Text style={styles.sectionTitle}>Devices Around</Text>
           <FlatList
-            data={devices}
+            data={devices.values}
             renderItem={({item}) => (
               <Text style={styles.itemPastConnections}>{short(item.uuid)}</Text>
             )}
