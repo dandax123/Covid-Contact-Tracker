@@ -8,6 +8,9 @@ export const sendFcmNotification = async (
   message: string
 ) => {
   try {
+    if (!devices.length) {
+      return;
+    }
     await axios.post(
       "https://fcm.googleapis.com/fcm/send",
       {

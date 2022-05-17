@@ -50,7 +50,7 @@ export const get_contacts_from_start_date: QueryType = {
           { primary_user: { _eq: "$user_id" } },
           { secondary_user: { _eq: "$user_id" } },
         ],
-        contact_time: { _gt: "$start_day" },
+        contact_time: { _gt: "$start_date" },
       },
     },
     fields: [

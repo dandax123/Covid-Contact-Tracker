@@ -5,7 +5,7 @@ import {
   get_contacts_from_start_date,
   get_user_devices,
 } from "./queries";
-const GRAPHL_URL = "";
+const GRAPHL_URL = "http://graphql-engine:8080/v1/graphql";
 export const check_positive_query = async (user: string): Promise<boolean> => {
   try {
     const data = {
