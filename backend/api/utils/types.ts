@@ -16,7 +16,7 @@ export type Contact_Users = {
   data: {
     Contact: [
       {
-        userBySecondaryUser: {
+        Primary_User_Contact: {
           user_id: string;
           Devices: [
             {
@@ -24,7 +24,7 @@ export type Contact_Users = {
             }
           ];
         };
-        User: {
+        Secondary_User_Contact: {
           user_id: string;
           Devices: [
             {

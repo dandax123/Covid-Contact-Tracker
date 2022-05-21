@@ -23,6 +23,21 @@ export const check_user_covid_status: QueryType = {
   },
 };
 
+export const update_user_warn_status: QueryType = {
+  operation: {
+    name: "update_User_by_pk",
+    args: {
+      pk_columns: {
+        user_id: "$user",
+      },
+      _set: {
+        warn_status: true,
+      },
+    },
+    fields: ["user_id"],
+  },
+};
+
 // Device(where: {user_id: ""}) {
 //     device_id,
 //     notification_status
@@ -55,7 +70,7 @@ export const get_contacts_from_start_date: QueryType = {
     },
     fields: [
       {
-        userBySecondaryUser: {
+        Secondary_User_Contact: {
           fields: [
             "user_id",
             {
@@ -67,7 +82,7 @@ export const get_contacts_from_start_date: QueryType = {
         },
       },
       {
-        User: {
+        Primary_User_Contact: {
           fields: [
             "user_id",
             {

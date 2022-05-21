@@ -3,6 +3,7 @@ const router = express.Router();
 import type { Response, NextFunction, Request } from "express";
 import { NewContact, NewCvTest } from "../utils/types";
 import {
+  change_user_warn_status,
   check_positive_query,
   get_user_contacts_by_date,
   get_user_device,
@@ -10,6 +11,7 @@ import {
 import logger from "../config/logger";
 import { sendFcmNotification } from "../utils";
 import moment from "moment";
+import { forEachSeries } from "p-iteration";
 
 router.post("/new_contact", async (req: Request, res: Response) => {
   try {
@@ -35,6 +37,7 @@ router.post("/new_contact", async (req: Request, res: Response) => {
       devices,
       "You are in contact with a Covid Positive Person, we suggest you take a covid test !!"
     );
+    await change_user_warn_status(user_to_warn);
     return res.json({ success: true });
   } catch (err) {
     console.log("Error!!!");
@@ -50,12 +53,18 @@ router.post("/new_cvtest", async (req: Request, res: Response) => {
       return res.json({ success: true });
     }
     const last_3_days = moment(data.test_time).subtract(3, "d").toISOString();
-    const devices = await get_user_contacts_by_date(data.user_id, last_3_days);
+    const { device_id: devices, user_id } = await get_user_contacts_by_date(
+      data.user_id,
+      last_3_days
+    );
     console.log("Devices found", devices);
     await sendFcmNotification(
       devices,
       "In the last three days you have made contact with a Covid Positive Person, we suggest you take a covid test !!"
     );
+    await forEachSeries(user_id, async (y) => {
+      await change_user_warn_status(y);
+    });
     return res.json({ success: true });
   } catch (err) {
     console.log("Error!!!");

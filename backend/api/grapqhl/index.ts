@@ -4,6 +4,7 @@ import {
   check_user_covid_status,
   get_contacts_from_start_date,
   get_user_devices,
+  update_user_warn_status,
 } from "./queries";
 
 import logger from "../config/logger";
@@ -51,10 +52,26 @@ export const get_user_device = async (user: string): Promise<string[]> => {
   }
 };
 
+export const change_user_warn_status = async (user_id: string) => {
+  try {
+    const data = {
+      user_id: {
+        type: "uuid",
+        value: user_id,
+      },
+    };
+    await gotQl.mutation(GRAPHQL_URL, {
+      ...update_user_warn_status,
+      variables: { ...data },
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
 export const get_user_contacts_by_date = async (
   user_id: string,
   start_date: string
-): Promise<string[]> => {
+): Promise<{ user_id: string[]; device_id: string[] }> => {
   try {
     const data = {
       user_id: {
@@ -78,20 +95,31 @@ export const get_user_contacts_by_date = async (
 
     const device_ids = res.data.Contact.map((y) => [
       {
-        user_id: y.userBySecondaryUser.user_id,
-        device_id: y.userBySecondaryUser.Devices[0].device_id,
+        user_id: y.Primary_User_Contact.user_id,
+        device_id: y.Primary_User_Contact.Devices[0].device_id,
       },
       {
-        user_id: y.User.user_id,
-        device_id: y.User.Devices[0].device_id,
+        user_id: y.Secondary_User_Contact.user_id,
+        device_id: y.Secondary_User_Contact.Devices[0].device_id,
       },
     ])
       .flat()
       .filter((y) => y.user_id !== user_id)
-      .map((y) => y.device_id);
+      .reduce(
+        (acc: { device_id: string[]; user_id: string[] }, curr) => {
+          return {
+            device_id: [...acc["device_id"], curr.device_id],
+            user_id: [...acc["user_id"], curr.user_id],
+          };
+        },
+        {
+          device_id: [],
+          user_id: [],
+        }
+      );
     return device_ids;
   } catch (err) {
     console.error(err);
-    return [];
+    return { device_id: [], user_id: [] };
   }
 };
