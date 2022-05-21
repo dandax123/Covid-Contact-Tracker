@@ -55,7 +55,7 @@ export const get_user_device = async (user: string): Promise<string[]> => {
 export const change_user_warn_status = async (user_id: string) => {
   try {
     const data = {
-      user_id: {
+      user: {
         type: "uuid",
         value: user_id,
       },
