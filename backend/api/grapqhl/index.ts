@@ -10,7 +10,7 @@ import {
 import logger from "../config/logger";
 const GRAPHQL_URL = process.env.GRAPHQL_URL
   ? `${process.env.GRAPQH_URL}`
-  : "http://graphql-engine:8080/v1/graphql";
+  : "https://cv-tracker-graphql.herokuapp.com/v1/graphql";
 export const check_positive_query = async (user: string): Promise<boolean> => {
   try {
     const data = {

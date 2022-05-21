@@ -45,7 +45,9 @@ router.post("/new_contact", async (req: Request, res: Response) => {
     return res.status(400).json({ success: false });
   }
 });
-
+router.get("/ping", async (req: Request, res: Response) => {
+  res.json({ success: true, message: "pong" });
+});
 router.post("/new_cvtest", async (req: Request, res: Response) => {
   try {
     const data: NewCvTest = req.body.event.data.new;

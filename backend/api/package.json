@@ -9,6 +9,7 @@
     "express": "^4.17.3",
     "gotql": "^2.1.0-alpha1",
     "moment": "^2.29.3",
+    "p-iteration": "^1.1.8",
     "ts-node": "^10.7.0",
     "ts-node-dev": "^1.1.8"
   },
