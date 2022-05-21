@@ -65,6 +65,8 @@ export const get_contacts_from_start_date: QueryType = {
             },
           ],
         },
+      },
+      {
         User: {
           fields: [
             "user_id",

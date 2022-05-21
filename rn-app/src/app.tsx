@@ -27,11 +27,13 @@ import useDevice from './store/useDevices';
 import {useMutation, useQuery} from '@apollo/client';
 import {
   ADD_NEW_CONTACT,
+  check_contact_made,
   CHECK_USER_EXIST,
   CREATE_NEW_USER_WITH_DEVICE,
   UPDATE_LAST_SEEN,
 } from './graphql/queries';
 import {Device} from './utils/types';
+import {forEachSeries} from 'p-iteration';
 
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
@@ -46,6 +48,7 @@ const Entry = () => {
   const [updateLastSeen] = useMutation(UPDATE_LAST_SEEN);
   const {changeDeviceState, bluetooth_active, location_active} =
     useBluetoothState();
+
   const {setup: deviceSetup, uuid, devices, update_device} = useDevice();
   const [state, setState] = useState({logging: false});
   const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
@@ -145,21 +148,21 @@ const Entry = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const start = () => {
+  const start = async () => {
     console.log(uuid, 'Registering Listener');
 
-    eventEmitter.addListener('onDeviceFound', event => {
+    eventEmitter.addListener('onDeviceFound', async event => {
       // console.log('onDeviceFound', event);
       if (event.serviceUuids) {
-        for (let i = 0; i < event.serviceUuids.length; i++) {
-          if (event.serviceUuids[i] && event.serviceUuids[i].endsWith('00')) {
+        await forEachSeries(event.serviceUuids, async (x: string) => {
+          if (x && x.endsWith('00')) {
             console.log('New device found');
-            handle_device_discovery({
-              uuid: event.serviceUuids[i],
+            await handle_device_discovery({
+              uuid: x,
               contact_time: new Date(),
             });
           }
-        }
+        });
       }
     });
     if (uuid !== '' && bluetooth_active && location_active) {
@@ -208,7 +211,7 @@ const Entry = () => {
     ).toUpperCase();
   };
 
-  const handle_device_discovery = (device: Device) => {
+  const handle_device_discovery = async (device: Device) => {
     //new_contact
     const is_old_contact = devices.get(device.uuid);
     if (is_old_contact) {
@@ -216,7 +219,6 @@ const Entry = () => {
       const timeDiff = Math.abs(
         is_old_contact.contact_time.getTime() - device.contact_time.getTime(),
       );
-
       if (timeDiff > c15_MINS) {
         console.log('here');
         update_device(device);
@@ -227,17 +229,27 @@ const Entry = () => {
             time: device.contact_time.toISOString(),
           },
         });
-        //discard
       }
     } else {
       update_device(device);
-      createNewContact({
-        variables: {
-          primary_user: uuid,
-          secondary_user: device.uuid,
-          time: device.contact_time.toISOString(),
-        },
-      });
+      const existing_contact = await check_contact_made(uuid, device.uuid);
+      if (!existing_contact) {
+        createNewContact({
+          variables: {
+            primary_user: uuid,
+            secondary_user: device.uuid,
+            time: device.contact_time.toISOString(),
+          },
+        });
+      } else if (existing_contact) {
+        updateLastSeen({
+          variables: {
+            primary_user: uuid,
+            secondary_user: device.uuid,
+            time: device.contact_time.toISOString(),
+          },
+        });
+      }
     }
   };
 

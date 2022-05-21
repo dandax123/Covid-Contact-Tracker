@@ -5,7 +5,11 @@ import {
   get_contacts_from_start_date,
   get_user_devices,
 } from "./queries";
-const GRAPHL_URL = "http://graphql-engine:8080/v1/graphql";
+
+import logger from "../config/logger";
+const GRAPHQL_URL = process.env.GRAPHQL_URL
+  ? `${process.env.GRAPQH_URL}`
+  : "http://graphql-engine:8080/v1/graphql";
 export const check_positive_query = async (user: string): Promise<boolean> => {
   try {
     const data = {
@@ -15,7 +19,7 @@ export const check_positive_query = async (user: string): Promise<boolean> => {
       },
     };
     const y: { data: { User_aggregate: { aggregate: { count: number } } } } =
-      await gotQl.query(GRAPHL_URL, {
+      await gotQl.query(GRAPHQL_URL, {
         ...check_user_covid_status,
         variables: { ...data },
       });
@@ -36,7 +40,7 @@ export const get_user_device = async (user: string): Promise<string[]> => {
     };
     const y: {
       data: { Device: [{ device_id: string }] };
-    } = await gotQl.query(GRAPHL_URL, {
+    } = await gotQl.query(GRAPHQL_URL, {
       ...get_user_devices,
       variables: { ...data },
     });
@@ -63,12 +67,14 @@ export const get_user_contacts_by_date = async (
       },
     };
 
-    const res: Contact_Users = await gotQl.query(GRAPHL_URL, {
+    const res: Contact_Users = await gotQl.query(GRAPHQL_URL, {
       ...get_contacts_from_start_date,
       variables: {
         ...data,
       },
     });
+
+    logger.info(res);
 
     const device_ids = res.data.Contact.map((y) => [
       {

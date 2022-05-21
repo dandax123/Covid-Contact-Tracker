@@ -1,5 +1,4 @@
 import {gql} from '@apollo/client';
-
 export const FETCH_USERS = gql`
   query {
     User {
@@ -26,7 +25,7 @@ export const CHECK_USER_EXIST = gql`
   }
 `;
 
-export const CHECK_CONTACT_EXIST = gql`
+export const CHECK_CONTACT_EXIST = `
   query check_contact_exist($primary_user: uuid!, $secondary_user: uuid!) {
     Contact_aggregate(
       where: {
@@ -75,11 +74,6 @@ export const ADD_NEW_CONTACT = gql`
         secondary_user: $secondary_user
         contact_time: $time
       }
-      on_conflict: {
-        constraint: my_unique_idx
-        update_columns: [contact_time]
-        where: {contact_time: {_lt: $time}}
-      }
     ) {
       contact_id
     }
@@ -111,3 +105,40 @@ export const UPDATE_LAST_SEEN = gql`
     }
   }
 `;
+
+export const check_contact_made = async (
+  primary_user: string,
+  secondary_user: string,
+): Promise<boolean> => {
+  try {
+    const data = {
+      primary_user,
+      secondary_user,
+    };
+    const endpoint = 'https://cv-tracker-graphql.herokuapp.com/v1/graphql';
+    const headers = {
+      'content-type': 'application/json',
+    };
+    const graphqlQuery = {
+      operationName: 'check_contact_exist',
+      query: CHECK_CONTACT_EXIST,
+      variables: data,
+    };
+
+    const options = {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(graphqlQuery),
+    };
+
+    const response = await fetch(endpoint, options);
+    const y: {data: {Contact_aggregate: {aggregate: {count: number}}}} =
+      await response.json();
+    console.log(y);
+    // console.log(y?.errors);
+    return Boolean(y.data.Contact_aggregate.aggregate.count);
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+};
