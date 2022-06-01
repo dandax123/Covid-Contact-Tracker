@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import Entry from './src/app';
 import {ApolloProvider} from '@apollo/client';
 
@@ -20,15 +20,14 @@ const new_client = newApolloclient();
 // const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const App = () => {
-  const [userExist, setUserExist] = useState(false);
-  const {uuid} = useDevice();
+  const {uuid, ready_to_serve, setup} = useDevice();
 
   useEffect(() => {
     async function init() {
       if (uuid !== '') {
         // SplashScreen.show();
         const doesExist = await check_user_exist(uuid);
-        setUserExist(doesExist);
+        setup('ready_to_serve', doesExist);
         SplashScreen.hide();
       }
       // if (uuid !== '' && doesExist ) {
@@ -46,7 +45,7 @@ const App = () => {
     <ApolloProvider client={new_client}>
       <Entry>
         <ThemeProvider theme={theme}>
-          {!userExist ? (
+          {ready_to_serve ? (
             <RegisterComponent />
           ) : (
             <NavigationContainer theme={DarkTheme}>

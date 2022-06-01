@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {ReactNode, useEffect, useState} from 'react';
 import {
   Notification,
   Notifications,
@@ -14,11 +14,10 @@ import {getAppKey} from './utils/key_storage';
 import {requestLocationPermission} from './utils';
 import useBluetoothState from './store/useBluetoothState';
 import useDevice from './store/useDevices';
-import {useMutation, useQuery} from '@apollo/client';
+import {useMutation} from '@apollo/client';
 import {
   ADD_NEW_CONTACT,
   check_contact_made,
-  CHECK_USER_EXIST,
   UPDATE_LAST_SEEN,
 } from './graphql/queries';
 import {Device} from './utils/types';
@@ -31,14 +30,20 @@ const c15_MINS = 1000 * 60 * 10;
 
 BLEAdvertiser.setCompanyId(APPLE_ID);
 
-const Entry = ({children}) => {
+const Entry: React.FC<{children: ReactNode}> = ({children}) => {
   // const [createNewUser] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
   const [createNewContact] = useMutation(ADD_NEW_CONTACT);
   const [updateLastSeen] = useMutation(UPDATE_LAST_SEEN);
   const {changeDeviceState, bluetooth_active, location_active} =
     useBluetoothState();
 
-  const {setup: deviceSetup, uuid, devices, update_device} = useDevice();
+  const {
+    setup: deviceSetup,
+    uuid,
+    devices,
+    update_device,
+    ready_to_serve,
+  } = useDevice();
   const [state, setState] = useState({logging: false});
   // const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
   //   variables: {
@@ -105,6 +110,9 @@ const Entry = ({children}) => {
 
   useEffect(() => {
     const device_state = async () => {
+      if (!ready_to_serve) {
+        return;
+      }
       await SystemSetting.isLocationEnabled().then((enable: boolean) => {
         changeDeviceState('location_active', enable);
       });
@@ -122,15 +130,15 @@ const Entry = ({children}) => {
     device_state();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready_to_serve]);
 
   useEffect(() => {
     console.log('to start');
-    if (bluetooth_active && location_active) {
+    if (bluetooth_active && location_active && ready_to_serve) {
       start();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bluetooth_active, location_active]);
+  }, [bluetooth_active, location_active, ready_to_serve]);
 
   const start = async () => {
     if (state.logging) {
@@ -190,13 +198,13 @@ const Entry = ({children}) => {
     });
   };
 
-  const short = (str: string) => {
-    return (
-      str.substring(0, 4) +
-      ' ... ' +
-      str.substring(str.length - 4, str.length)
-    ).toUpperCase();
-  };
+  // const short = (str: string) => {
+  //   return (
+  //     str.substring(0, 4) +
+  //     ' ... ' +
+  //     str.substring(str.length - 4, str.length)
+  //   ).toUpperCase();
+  // };
 
   const handle_device_discovery = async (device: Device) => {
     //new_contact
