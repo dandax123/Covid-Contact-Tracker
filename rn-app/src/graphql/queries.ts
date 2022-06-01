@@ -1,4 +1,5 @@
 import {gql} from '@apollo/client';
+import {ApiCall} from './asyncApiCall';
 export const FETCH_USERS = gql`
   query {
     User {
@@ -15,7 +16,7 @@ export const CREATE_NEW_USER = gql`
   }
 `;
 
-export const CHECK_USER_EXIST = gql`
+export const CHECK_USER_EXIST = `
   query check_user_exist($user_id: uuid!) {
     User_aggregate(where: {user_id: {_eq: $user_id}}) {
       aggregate {
@@ -49,11 +50,20 @@ export const CHECK_CONTACT_EXIST = `
 `;
 
 export const CREATE_NEW_USER_WITH_DEVICE = gql`
-  mutation new_user($user_id: uuid!, $device_id: String!) {
+  mutation new_user(
+    $user_id: uuid!
+    $device_id: String!
+    $first_name: String!
+    $last_name: String!
+    $school_id: String!
+  ) {
     insert_User_one(
       object: {
         user_id: $user_id
         covid_status: false
+        first_name: $first_name
+        last_name: $last_name
+        school_id: $school_id
         Devices: {data: {device_id: $device_id}}
       }
     ) {
@@ -106,37 +116,30 @@ export const UPDATE_LAST_SEEN = gql`
   }
 `;
 
+export const check_user_exist = async (user_id: string): Promise<boolean> => {
+  try {
+    const res: {data: {User_aggregate: {aggregate: {count: number}}}} =
+      await ApiCall('check_user_exist', CHECK_USER_EXIST, {user_id});
+    return Boolean(res.data.User_aggregate.aggregate.count);
+  } catch (err) {}
+  return false;
+};
 export const check_contact_made = async (
   primary_user: string,
   secondary_user: string,
 ): Promise<boolean> => {
   try {
+    type Result = {data: {Contact_aggregate: {aggregate: {count: number}}}};
     const data = {
       primary_user,
       secondary_user,
     };
-    const endpoint = 'https://cv-tracker-graphql.herokuapp.com/v1/graphql';
-    const headers = {
-      'content-type': 'application/json',
-    };
-    const graphqlQuery = {
-      operationName: 'check_contact_exist',
-      query: CHECK_CONTACT_EXIST,
-      variables: data,
-    };
-
-    const options = {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(graphqlQuery),
-    };
-
-    const response = await fetch(endpoint, options);
-    const y: {data: {Contact_aggregate: {aggregate: {count: number}}}} =
-      await response.json();
-    console.log(y);
-    // console.log(y?.errors);
-    return Boolean(y.data.Contact_aggregate.aggregate.count);
+    const response: Result = await ApiCall(
+      'check_contact_exist',
+      CHECK_CONTACT_EXIST,
+      data,
+    );
+    return Boolean(response.data.Contact_aggregate.aggregate.count);
   } catch (err) {
     console.error(err);
     return false;
