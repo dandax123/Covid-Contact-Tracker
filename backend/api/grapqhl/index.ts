@@ -6,8 +6,6 @@ import {
   get_user_devices,
   update_user_warn_status,
 } from "./queries";
-
-import logger from "../config/logger";
 const GRAPHQL_URL = process.env.GRAPHQL_URL
   ? `${process.env.GRAPQH_URL}`
   : "https://cv-tracker-graphql.herokuapp.com/v1/graphql";
@@ -15,7 +13,7 @@ export const check_positive_query = async (user: string): Promise<boolean> => {
   try {
     const data = {
       user: {
-        type: "uuid",
+        type: "uuid!",
         value: user,
       },
     };
@@ -35,7 +33,7 @@ export const get_user_device = async (user: string): Promise<string[]> => {
   try {
     const data = {
       user: {
-        type: "uuid",
+        type: "uuid!",
         value: user,
       },
     };
@@ -55,8 +53,8 @@ export const get_user_device = async (user: string): Promise<string[]> => {
 export const change_user_warn_status = async (user_id: string) => {
   try {
     const data = {
-      user: {
-        type: "uuid",
+      user_id: {
+        type: "uuid!",
         value: user_id,
       },
     };
@@ -75,11 +73,11 @@ export const get_user_contacts_by_date = async (
   try {
     const data = {
       user_id: {
-        type: "uuid",
+        type: "uuid!",
         value: user_id,
       },
       start_date: {
-        type: "timestamptz",
+        type: "timestamp",
         value: start_date,
       },
     };
@@ -90,8 +88,6 @@ export const get_user_contacts_by_date = async (
         ...data,
       },
     });
-
-    logger.info(res);
 
     const device_ids = res.data.Contact.map((y) => [
       {

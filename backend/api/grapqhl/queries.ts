@@ -28,7 +28,7 @@ export const update_user_warn_status: QueryType = {
     name: "update_User_by_pk",
     args: {
       pk_columns: {
-        user_id: "$user",
+        user_id: "$user_id",
       },
       _set: {
         warn_status: true,
