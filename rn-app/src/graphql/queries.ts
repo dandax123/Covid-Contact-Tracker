@@ -25,6 +25,26 @@ export const CHECK_USER_EXIST = `
     }
   }
 `;
+export const GET_LAST_COVID_TEST = gql`
+  query get_lastest_user_test($user: uuid!) {
+    CovidTest(
+      limit: 1
+      where: {user_id: {_eq: $user}}
+      order_by: {test_time: desc}
+    ) {
+      test_id
+      test_time
+    }
+  }
+`;
+
+export const COVID_TEST = gql`
+  mutation new_test($user: uuid!) {
+    insert_CovidTest_one(object: {user_id: $user, test_status: true}) {
+      test_id
+    }
+  }
+`;
 
 export const CHECK_CONTACT_EXIST = `
   query check_contact_exist($primary_user: uuid!, $secondary_user: uuid!) {

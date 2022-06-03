@@ -50,7 +50,10 @@ const App = () => {
             <RegisterComponent />
           ) : (
             <NavigationContainer theme={DarkTheme}>
-              <Tab.Navigator>
+              <Tab.Navigator
+                screenOptions={{
+                  tabBarShowLabel: false,
+                }}>
                 <Tab.Screen name="Home" component={Home} />
                 <Tab.Screen name="Test" component={Test} />
                 <Tab.Screen name="Settings" component={Home} />

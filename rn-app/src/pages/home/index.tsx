@@ -5,6 +5,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Button} from '@rneui/themed';
 import {homeStyles} from './styles';
 // import {FETCH_USERS} from '../../graphql/queries';
+
 import SystemSetting from 'react-native-system-setting';
 
 import useBluetoothState from '../../store/useBluetoothState';
