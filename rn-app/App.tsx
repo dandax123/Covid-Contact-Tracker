@@ -15,6 +15,7 @@ import {createTheme, ThemeProvider} from '@rneui/themed';
 import RegisterComponent from './src/pages/register';
 import {check_user_exist} from './src/graphql/queries';
 import useDevice from './src/store/useDevices';
+import Test from './src/pages/test';
 
 const new_client = newApolloclient();
 // const Stack = createStackNavigator();
@@ -45,12 +46,13 @@ const App = () => {
     <ApolloProvider client={new_client}>
       <Entry>
         <ThemeProvider theme={theme}>
-          {ready_to_serve ? (
+          {!ready_to_serve ? (
             <RegisterComponent />
           ) : (
             <NavigationContainer theme={DarkTheme}>
               <Tab.Navigator>
-                <Tab.Screen name="Test" component={Home} />
+                <Tab.Screen name="Home" component={Home} />
+                <Tab.Screen name="Test" component={Test} />
                 <Tab.Screen name="Settings" component={Home} />
               </Tab.Navigator>
             </NavigationContainer>

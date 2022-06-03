@@ -55,7 +55,7 @@ export const CREATE_NEW_USER_WITH_DEVICE = gql`
     $device_id: String!
     $first_name: String!
     $last_name: String!
-    $school_id: String!
+    $school_id: Int
   ) {
     insert_User_one(
       object: {

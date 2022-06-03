@@ -79,7 +79,7 @@ const Entry: React.FC<{children: ReactNode}> = ({children}) => {
       (event: Registered) => {
         // TODO: Send the token to my server so it could send back push notifications...
         // console.log('Device Token Received', event.deviceToken);
-        console.log('Init reg process');
+        // console.log('Init reg process');
 
         deviceSetup('token_id', event.deviceToken);
       },

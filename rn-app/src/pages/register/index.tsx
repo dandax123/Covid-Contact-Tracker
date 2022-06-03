@@ -10,8 +10,10 @@ import {regStyles} from './styles';
 import useDevice from '../../store/useDevices';
 
 const RegisterComponent = ({}) => {
-  const {uuid, token_id} = useDevice();
-  const [createUser, {loading}] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
+  const {uuid, token_id, setup} = useDevice();
+  const [createUser, {loading, data}] = useMutation(
+    CREATE_NEW_USER_WITH_DEVICE,
+  );
   const handleFormSubmit = (values: {
     first_name: string;
     last_name: string;
@@ -28,6 +30,9 @@ const RegisterComponent = ({}) => {
           school_id: id,
         },
       });
+      if (!loading && data) {
+        setup('ready_to_serve', true);
+      }
     }
     return;
   };

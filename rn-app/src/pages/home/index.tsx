@@ -51,7 +51,7 @@ const StatusComponent: React.FC<{enabled: boolean}> = ({enabled}) => {
           source={{
             uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNARDmtF-GcrS353ErLwh52tzcATMokTevEg&usqp=CAU',
           }}
-          style={homeStyles.imageStyle}
+          containerStyle={homeStyles.imageStyle}
         />
         <Text style={homeStyles.mainText}>
           {!enabled
@@ -64,15 +64,17 @@ const StatusComponent: React.FC<{enabled: boolean}> = ({enabled}) => {
             ? 'Your phone is inactive to detect COVID-19 cases you may be exposed to'
             : 'Your phone is currently active and detecting possible COVID-19 cases'}
         </Text>
-        <Button
-          title={!enabled ? 'ENABLE' : 'DISABLE'}
-          raised
-          buttonStyle={homeStyles.startLoggingButtonTouchable}
-          containerStyle={homeStyles.buttonContainerStyle}
-          titleStyle={homeStyles.startLoggingButtonText}
-          activeOpacity={10}
-          onPress={() => handleButtonPress}
-        />
+        {!enabled ? (
+          <Button
+            title={'ENABLE'}
+            raised
+            buttonStyle={homeStyles.startLoggingButtonTouchable}
+            containerStyle={homeStyles.buttonContainerStyle}
+            titleStyle={homeStyles.startLoggingButtonText}
+            activeOpacity={10}
+            onPress={() => handleButtonPress}
+          />
+        ) : null}
       </View>
     </Card>
   );
