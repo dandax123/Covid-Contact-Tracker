@@ -70,7 +70,9 @@ const Entry = ({children}: AuxProps) => {
     setup();
 
     () => {
-      if (state.logging) stop();
+      if (state.logging) {
+        stop();
+      }
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

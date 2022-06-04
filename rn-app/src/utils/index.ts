@@ -9,7 +9,9 @@ export const requestPermission = async (
   location: boolean;
   bluetooth: boolean;
 }> => {
-  if (location && bluetooth) return {location, bluetooth};
+  if (location && bluetooth) {
+    return {location, bluetooth};
+  }
   try {
     let result = {
       location,
