@@ -6,18 +6,16 @@ type DeviceState = {
   uuid: string;
   token_id: string;
   devices: Map<string, Device>;
-  ready_to_serve: boolean;
 };
 
 const initial_state: DeviceState = {
   uuid: '',
   token_id: '',
   devices: new Map<string, Device>(),
-  ready_to_serve: false,
 };
 const useDevice = create(
   combine(initial_state, (set, get) => ({
-    setup: (key: 'uuid' | 'token_id' | 'ready_to_serve', value: any) =>
+    setup: (key: 'uuid' | 'token_id', value: any) =>
       set({
         ...get(),
         [key]: value,

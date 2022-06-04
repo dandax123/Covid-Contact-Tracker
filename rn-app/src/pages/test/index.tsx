@@ -1,6 +1,8 @@
+/* eslint-disable react-native/no-inline-styles */
 import {useMutation, useQuery} from '@apollo/client';
 import {Button} from '@rneui/base';
 import {Dialog} from '@rneui/themed';
+
 import React from 'react';
 import {useEffect} from 'react';
 import {useState} from 'react';
@@ -12,20 +14,23 @@ import {testStyles} from './styles';
 const c14_DAYS = 1.21e9;
 const Test = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [takeTest, setTakeTest] = useState(false);
+  const [takeTest, setTakeTest] = useState(true);
   const {uuid} = useDevice();
-  const [createTest, {loading}] = useMutation(COVID_TEST, {
+  const [createTest] = useMutation(COVID_TEST, {
     refetchQueries: [{query: GET_LAST_COVID_TEST}, 'get_lastest_user_test'],
   });
-  const {data: prevTestData} = useQuery(GET_LAST_COVID_TEST, {
-    variables: {
-      user: uuid,
+  const {data: prevTestData, loading: testLoading} = useQuery(
+    GET_LAST_COVID_TEST,
+    {
+      variables: {
+        user: uuid,
+      },
     },
-  });
+  );
 
   useEffect(() => {
     console.log(prevTestData);
-    if (prevTestData) {
+    if (prevTestData?.CovidTest?.length === 1) {
       const time = new Date(prevTestData?.CovidTest[0]?.test_time);
       if (Math.abs(time.getTime() - new Date().getTime()) > c14_DAYS) {
         setTakeTest(true);
@@ -61,9 +66,9 @@ const Test = () => {
           title={'SHARE YOUR POSITIVE DIAGNOSIS'}
           containerStyle={testStyles.shareButton}
           onPress={() => setIsVisible(true)}
-          disabled={!takeTest}
+          disabled={!takeTest && !testLoading}
         />
-        {!takeTest ? (
+        {!takeTest && !testLoading ? (
           <Text>You have taken a test in the last 14 days.</Text>
         ) : null}
       </View>
@@ -82,16 +87,16 @@ const Test = () => {
         </View>
         <Dialog.Actions>
           <Dialog.Button
-            title={'Submit'}
-            titleStyle={testStyles.cancelText}
-            containerStyle={testStyles.buttonContainerStyle}
-            onPress={handleSubmit}
-          />
-          <Dialog.Button
-            title={'Cancel'}
+            title={'No'}
             type={'outline'}
             onPress={() => setIsVisible(false)}
             titleStyle={testStyles.cancelText}
+          />
+          <Dialog.Button
+            title={'Yes'}
+            titleStyle={testStyles.cancelText}
+            containerStyle={testStyles.buttonContainerStyle}
+            onPress={handleSubmit}
           />
         </Dialog.Actions>
       </Dialog>

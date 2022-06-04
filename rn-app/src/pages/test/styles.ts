@@ -18,6 +18,7 @@ export const testStyles = StyleSheet.create({
     borderRadius: 0,
     // margin: 4,
     // padding: 4,
+    marginRight: 15,
     // marginLeft: 10,
     borderWidth: 0,
   },

@@ -1,25 +1,26 @@
 import {useMutation} from '@apollo/client';
 import React from 'react';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 import {CREATE_NEW_USER_WITH_DEVICE} from '../../graphql/queries';
 import {Formik} from 'formik';
-import {Input, Button} from '@rneui/themed';
+import {Input, Button, Icon} from '@rneui/themed';
 // import {SafeAreaView} from 'react-native-safe-area-context';
 // import {Card, Button} from '@rneui/themed';
 import {regStyles} from './styles';
 import useDevice from '../../store/useDevices';
+import useSetup from '../../store/useSetup';
 
 const RegisterComponent = ({}) => {
-  const {uuid, token_id, setup} = useDevice();
-  const [createUser, {loading, data}] = useMutation(
-    CREATE_NEW_USER_WITH_DEVICE,
-  );
+  const {uuid, token_id} = useDevice();
+  const {setupComplete} = useSetup();
+  const [createUser, {loading}] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
   const handleFormSubmit = (values: {
     first_name: string;
     last_name: string;
     id: string;
   }) => {
     const {first_name, last_name, id} = values;
+
     if (uuid !== '' && token_id !== '') {
       createUser({
         variables: {
@@ -30,19 +31,18 @@ const RegisterComponent = ({}) => {
           school_id: id,
         },
       });
-      if (!loading && data) {
-        setup('ready_to_serve', true);
-      }
+      setupComplete();
     }
     return;
   };
   return (
     <View style={regStyles.mainStyle}>
+      <Text>Register </Text>
       <Formik
         initialValues={{first_name: '', last_name: '', id: ''}}
         onSubmit={handleFormSubmit}>
         {({handleChange, handleBlur, handleSubmit, values}) => (
-          <View>
+          <View style={regStyles.mainFormStyle}>
             <Input
               label="Student / Staff ID"
               onChangeText={handleChange('id')}
@@ -50,6 +50,14 @@ const RegisterComponent = ({}) => {
               onBlur={handleBlur('id')}
               labelStyle={regStyles.labelStyle}
               placeholder={'10000000'}
+              leftIcon={
+                <Icon
+                  name="school-outline"
+                  type="ionicon"
+                  size={24}
+                  color="white"
+                />
+              }
               inputStyle={regStyles.inputStyle}
             />
             <Input
@@ -58,6 +66,11 @@ const RegisterComponent = ({}) => {
               value={values.first_name}
               onBlur={handleBlur('first_name')}
               labelStyle={regStyles.labelStyle}
+              leftIcon={{
+                type: 'ionicon',
+                name: 'person-outline',
+                color: '#ffffff',
+              }}
               inputStyle={regStyles.inputStyle}
             />
             <Input
@@ -65,6 +78,11 @@ const RegisterComponent = ({}) => {
               onChangeText={handleChange('last_name')}
               value={values.last_name}
               onBlur={handleBlur('last_name')}
+              leftIcon={{
+                type: 'ionicon',
+                name: 'person-outline',
+                color: '#ffffff',
+              }}
               labelStyle={regStyles.labelStyle}
               inputStyle={regStyles.inputStyle}
             />

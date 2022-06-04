@@ -4,12 +4,17 @@ import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Button} from '@rneui/themed';
 import {homeStyles} from './styles';
+
+// import
 // import {FETCH_USERS} from '../../graphql/queries';
 
-import SystemSetting from 'react-native-system-setting';
-
 import useBluetoothState from '../../store/useBluetoothState';
+import {requestPermission} from '../../utils';
 
+const Img_set = {
+  good: require('../../utils/img/good_state.jpeg'),
+  bad: require('../../utils/img/bad_state.jpeg'),
+};
 const Home = () => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
 
@@ -30,28 +35,13 @@ const Home = () => {
 const StatusComponent: React.FC<{enabled: boolean}> = ({enabled}) => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
   const handleButtonPress = async () => {
-    if (!location_active) {
-      await SystemSetting.switchLocation();
-    }
-    if (!bluetooth_active) {
-      await SystemSetting.switchBluetooth();
-    }
-
-    if (bluetooth_active) {
-      await SystemSetting.switchBluetoothSilence();
-    }
-
-    if (location_active) {
-      await SystemSetting.switchLocation();
-    }
+    await requestPermission(bluetooth_active, location_active);
   };
   return (
     <Card containerStyle={homeStyles.cardMainStyle}>
       <View style={homeStyles.imageView}>
         <Card.Image
-          source={{
-            uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNARDmtF-GcrS353ErLwh52tzcATMokTevEg&usqp=CAU',
-          }}
+          source={enabled ? Img_set.good : Img_set.bad}
           containerStyle={homeStyles.imageStyle}
         />
         <Text style={homeStyles.mainText}>
@@ -73,7 +63,7 @@ const StatusComponent: React.FC<{enabled: boolean}> = ({enabled}) => {
             containerStyle={homeStyles.buttonContainerStyle}
             titleStyle={homeStyles.startLoggingButtonText}
             activeOpacity={10}
-            onPress={() => handleButtonPress}
+            onPress={handleButtonPress}
           />
         ) : null}
       </View>

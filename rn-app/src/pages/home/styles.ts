@@ -18,18 +18,21 @@ export const homeStyles = StyleSheet.create({
   },
   imageStyle: {
     width: '100%',
-    maxHeight: '40%',
-    maxWidth: '40%',
+    maxHeight: '30%',
+    maxWidth: '30%',
     backgroundColor: '#ffffff',
     height: '100%',
+    resizeMode: 'cover',
     aspectRatio: 1,
     flex: 1,
     // alignSelf: 'center',
-    borderRadius: 100,
-    margin: 0,
+    borderRadius: 50,
+    margin: 8,
   },
   cardMainStyle: {
-    backgroundColor: '#2C4578',
+    // backgroundColor: '#2C4578',
+    backgroundColor: '#17202A',
+
     borderWidth: 0,
     borderRadius: 5,
     margin: 0,
@@ -53,7 +56,7 @@ export const homeStyles = StyleSheet.create({
     fontWeight: '700',
   },
   startLoggingButtonTouchable: {
-    backgroundColor: '#9478F6',
+    // backgroundColor: '#9478F6',
     width: '100%',
     height: '100%',
     borderRadius: 12,
@@ -81,9 +84,9 @@ export const homeStyles = StyleSheet.create({
   startLoggingButtonText: {
     fontSize: 14,
     lineHeight: 19,
-    letterSpacing: 0,
+    letterSpacing: 1,
     textAlign: 'center',
-    color: '#0C7A48',
+    color: '#ffffff',
     fontWeight: 'bold',
   },
   stopLoggingButtonTouchable: {

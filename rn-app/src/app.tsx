@@ -1,4 +1,5 @@
-import React, {ReactNode, useEffect, useState} from 'react';
+// import React from 'react';
+import React, {ReactChildren, ReactNode, useEffect, useState} from 'react';
 import {
   Notification,
   Notifications,
@@ -11,7 +12,7 @@ import SystemSetting from 'react-native-system-setting';
 import BLEAdvertiser from 'react-native-ble-advertiser';
 import {getAppKey} from './utils/key_storage';
 
-import {requestLocationPermission} from './utils';
+// import {requestPermission} from './utils';
 import useBluetoothState from './store/useBluetoothState';
 import useDevice from './store/useDevices';
 import {useMutation} from '@apollo/client';
@@ -22,6 +23,7 @@ import {
 } from './graphql/queries';
 import {Device} from './utils/types';
 import {forEachSeries} from 'p-iteration';
+import useSetup from './store/useSetup';
 
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
@@ -30,20 +32,19 @@ const c15_MINS = 1000 * 60 * 10;
 
 BLEAdvertiser.setCompanyId(APPLE_ID);
 
-const Entry: React.FC<{children: ReactNode}> = ({children}) => {
+interface AuxProps {
+  children: ReactNode | ReactChildren;
+}
+
+const Entry = ({children}: AuxProps) => {
   // const [createNewUser] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
   const [createNewContact] = useMutation(ADD_NEW_CONTACT);
   const [updateLastSeen] = useMutation(UPDATE_LAST_SEEN);
   const {changeDeviceState, bluetooth_active, location_active} =
     useBluetoothState();
 
-  const {
-    setup: deviceSetup,
-    uuid,
-    devices,
-    update_device,
-    ready_to_serve,
-  } = useDevice();
+  const {setup: deviceSetup, uuid, devices, update_device} = useDevice();
+  const {ready_to_serve} = useSetup();
   const [state, setState] = useState({logging: false});
   // const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
   //   variables: {
@@ -56,12 +57,15 @@ const Entry: React.FC<{children: ReactNode}> = ({children}) => {
       const app_key = await getAppKey();
       deviceSetup('uuid', app_key);
 
-      if (!bluetooth_active) {
-        const result = await requestLocationPermission();
-        if (result.bluetooth && result.location) {
-          changeDeviceState('bluetooth_active', true);
-        }
-      }
+      // if (!bluetooth_active || !location_active) {
+      //   const result = await requestPermission();
+      //   if (result.bluetooth) {
+      //     changeDeviceState('bluetooth_active', true);
+      //   }
+      //   if (result.location) {
+      //     changeDeviceState('location_active', true);
+      //   }
+      // }
     };
     setup();
 
@@ -70,9 +74,10 @@ const Entry: React.FC<{children: ReactNode}> = ({children}) => {
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bluetooth_active, uuid]);
+  }, [bluetooth_active, uuid, location_active]);
   useEffect(() => {
     // Request permissions on iOS, refresh token on Android
+
     Notifications.registerRemoteNotifications();
 
     Notifications.events().registerRemoteNotificationsRegistered(
@@ -248,7 +253,7 @@ const Entry: React.FC<{children: ReactNode}> = ({children}) => {
     }
   };
 
-  return children;
+  return <>{children}</>;
 };
 
 export default Entry;

@@ -9,6 +9,14 @@ export const regStyles = StyleSheet.create({
   inputStyle: {
     color: '#ffffff',
   },
+  mainFormStyle: {
+    marginVertical: 20,
+    backgroundColor: '#17202A',
+    borderRadius: 8,
+    paddingVertical: 15,
+
+    // backgroundColor: '#ffffff',
+  },
   buttonStyle: {
     // alignSelf: 'center',
     // textAlign: 'center',
@@ -31,5 +39,6 @@ export const regStyles = StyleSheet.create({
     flexDirection: 'column',
     paddingHorizontal: 2,
     paddingVertical: 20,
+    justifyContent: 'center',
   },
 });
