@@ -53,8 +53,8 @@ export const requestPermission = async (
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
-            title: 'BLE Avertiser Example App',
-            message: 'Example App access to your location ',
+            title: 'Covid Tracker App',
+            message: 'Covid Tracker App access to your location ',
             buttonPositive: 'Ok',
           },
         );

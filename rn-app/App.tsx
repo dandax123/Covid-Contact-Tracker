@@ -56,7 +56,7 @@ const App = () => {
             <NavigationContainer theme={DarkTheme}>
               <Tab.Navigator
                 screenOptions={({route}) => ({
-                  tabBarShowLabel: false,
+                  tabBarShowLabel: true,
                   headerStyle: {
                     backgroundColor: theme.darkColors?.background,
                   },

@@ -34,6 +34,7 @@
     "react-native-system-setting": "^1.7.6",
     "react-native-uuid-generator": "^6.1.1",
     "react-native-vector-icons": "^9.1.0",
+    "yup": "^0.32.11",
     "zustand": "^4.0.0-rc.1"
   },
   "devDependencies": {
