@@ -4,6 +4,7 @@ import {
   check_user_covid_status,
   get_contacts_from_start_date,
   get_user_devices,
+  update_user_covid_status,
   update_user_warn_status,
 } from "./queries";
 const GRAPHQL_URL = process.env.GRAPHQL_URL
@@ -50,7 +51,10 @@ export const get_user_device = async (user: string): Promise<string[]> => {
   }
 };
 
-export const change_user_warn_status = async (user_id: string) => {
+export const change_user_warn_or_covid_status = async (
+  user_id: string,
+  isWarn = true
+) => {
   try {
     const data = {
       user_id: {
@@ -59,7 +63,7 @@ export const change_user_warn_status = async (user_id: string) => {
       },
     };
     await gotQl.mutation(GRAPHQL_URL, {
-      ...update_user_warn_status,
+      ...(isWarn ? update_user_warn_status : update_user_covid_status),
       variables: { ...data },
     });
   } catch (err) {

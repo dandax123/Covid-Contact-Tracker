@@ -38,6 +38,20 @@ export const update_user_warn_status: QueryType = {
   },
 };
 
+export const update_user_covid_status: QueryType = {
+  operation: {
+    name: "update_User_by_pk",
+    args: {
+      pk_columns: {
+        user_id: "$user_id",
+      },
+      _set: {
+        covid_status: false,
+      },
+    },
+    fields: ["user_id"],
+  },
+};
 // Device(where: {user_id: ""}) {
 //     device_id,
 //     notification_status

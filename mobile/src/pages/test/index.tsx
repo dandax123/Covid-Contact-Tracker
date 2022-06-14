@@ -11,7 +11,7 @@ import {COVID_TEST, GET_LAST_COVID_TEST} from '../../graphql/queries';
 import useDevice from '../../store/useDevices';
 
 import {testStyles} from './styles';
-const c14_DAYS = 1.21e9;
+const c7_DAYS = 6.048e8;
 const Test = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [takeTest, setTakeTest] = useState(true);
@@ -32,7 +32,7 @@ const Test = () => {
     console.log(prevTestData);
     if (prevTestData?.CovidTest?.length === 1) {
       const time = new Date(prevTestData?.CovidTest[0]?.test_time);
-      if (Math.abs(time.getTime() - new Date().getTime()) > c14_DAYS) {
+      if (Math.abs(time.getTime() - new Date().getTime()) > c7_DAYS) {
         setTakeTest(true);
       }
     }
@@ -69,7 +69,7 @@ const Test = () => {
           disabled={!takeTest && !testLoading}
         />
         {!takeTest && !testLoading ? (
-          <Text>You have taken a test in the last 14 days.</Text>
+          <Text>You have taken a test in the last 7 days.</Text>
         ) : null}
       </View>
       <View style={testStyles.testResultBody}></View>

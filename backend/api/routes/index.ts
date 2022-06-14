@@ -3,14 +3,17 @@ const router = express.Router();
 import type { Response, NextFunction, Request } from "express";
 import { NewContact, NewCvTest } from "../utils/types";
 import {
-  change_user_warn_status,
+  change_user_warn_or_covid_status,
   check_positive_query,
   get_user_contacts_by_date,
   get_user_device,
 } from "../grapqhl";
 import logger from "../config/logger";
-import { sendFcmNotification } from "../utils";
-import moment from "moment";
+import {
+  sendFcmNotification,
+  setScheduledTimerForPositiveCase,
+} from "../utils";
+import moment, { now } from "moment";
 import { forEachSeries } from "p-iteration";
 
 router.post("/new_contact", async (req: Request, res: Response) => {
@@ -32,7 +35,7 @@ router.post("/new_contact", async (req: Request, res: Response) => {
       devices,
       "You are in contact with a Covid Positive Person, we suggest you take a covid test !!"
     );
-    await change_user_warn_status(user_to_warn);
+    await change_user_warn_or_covid_status(user_to_warn);
     return res.json({ success: true });
   } catch (err) {
     console.log("Error!!!");
@@ -59,8 +62,12 @@ router.post("/new_cvtest", async (req: Request, res: Response) => {
 
     await forEachSeries(users, async (y) => {
       console.log(y);
-      await change_user_warn_status(y);
+      await change_user_warn_or_covid_status(y);
     });
+    await setScheduledTimerForPositiveCase(
+      data.user_id,
+      moment(data.test_time).add(7, "d").toISOString()
+    );
     return res.json({ success: true });
   } catch (err) {
     logger.error(err);
@@ -69,4 +76,14 @@ router.post("/new_cvtest", async (req: Request, res: Response) => {
   }
 });
 
+router.post("/switch_test_case", async (req: Request, res: Response) => {
+  try {
+    const user_id = req.body.payload.user_id;
+    await change_user_warn_or_covid_status(user_id, false);
+    return res.json({ success: true });
+  } catch (err) {
+    logger.error(err);
+    return res.status(400).json({ success: false });
+  }
+});
 export default router;
