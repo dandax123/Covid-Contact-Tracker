@@ -25,8 +25,8 @@ export const requestPermission = async (
     // });
     if (!result.bluetooth) {
       await Alert.alert(
-        'Covid Tracker app requires bluetooth to be enabled',
-        'Would you like to enable Bluetooth?',
+        'Covid Tracker app',
+        'This app requires Bluetooth to be enabled to scan, broadcast and find other devices. Would you like to enable Bluetooth?',
         [
           {
             text: 'Yes',

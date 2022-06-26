@@ -1,10 +1,13 @@
 import gotQl from "gotql";
+import logger from "../config/logger";
 import { Contact_Users } from "../utils/types";
 import {
   check_user_covid_status,
   get_contacts_from_start_date,
   get_user_devices,
+  update_contact_warn_neg_status,
   update_user_covid_status,
+  update_user_positive_covid_status,
   update_user_warn_status,
 } from "./queries";
 const GRAPHQL_URL = process.env.GRAPHQL_URL
@@ -51,9 +54,25 @@ export const get_user_device = async (user: string): Promise<string[]> => {
   }
 };
 
-export const change_user_warn_or_covid_status = async (
+export const change_contact_to_negwarn_status = async (contact_id: string) => {
+  try {
+    const data = {
+      contact_id: {
+        type: "uuid!",
+        value: contact_id,
+      },
+    };
+    await gotQl.mutation(GRAPHQL_URL, {
+      ...update_contact_warn_neg_status,
+      variables: { ...data },
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+export const change_user_covid_status = async (
   user_id: string,
-  isWarn = true
+  isP = false
 ) => {
   try {
     const data = {
@@ -62,12 +81,39 @@ export const change_user_warn_or_covid_status = async (
         value: user_id,
       },
     };
+
     await gotQl.mutation(GRAPHQL_URL, {
-      ...(isWarn ? update_user_warn_status : update_user_covid_status),
+      ...(isP ? update_user_positive_covid_status : update_user_covid_status),
       variables: { ...data },
     });
   } catch (err) {
     console.error(err);
+  }
+};
+
+export const change_users_warn_status = async (
+  p_user: string,
+  s_user: string
+): Promise<string> => {
+  try {
+    const data = {
+      p_user: {
+        type: "uuid!",
+        value: p_user,
+      },
+      s_user: {
+        type: "uuid!",
+        value: s_user,
+      },
+    };
+    const res = await gotQl.mutation(GRAPHQL_URL, {
+      ...update_user_warn_status,
+      variables: { ...data },
+    });
+    return res?.data?.update_Contact?.returning[0]?.contact_id;
+  } catch (err: any) {
+    logger.info(err);
+    throw new Error(err);
   }
 };
 export const get_user_contacts_by_date = async (
