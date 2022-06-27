@@ -70,7 +70,7 @@ const Test = () => {
         />
         {!takeTest && !testLoading ? (
           <Text style={testStyles.mainText}>
-            You have taken a test in the last 7 days.
+            You have shared a positive diagnosis in the last 7 days.
           </Text>
         ) : null}
       </View>

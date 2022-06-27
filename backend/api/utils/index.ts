@@ -1,8 +1,7 @@
 import axios from "axios";
 
-const serverKey = process.env.SERVER_KEY;
+const serverKey = `${process.env.SERVER_KEY}`;
 
-// "AAAAcSJccXE:APA91bGBn_Du4lVdqFt_MJX7lYY2To16OJ2jrb99SHUbXd56WZS9id5XjNg07YfOXKksY9_SU0nbI1DkbY2V2T3pHb88OhTj9-GpuCGBpIRFukU_2Vr5OzQPPtyDFeVKJQL0VmmJqgAV"
 export const setScheduledTimerEvent = async (
   payload: { [index: string]: any },
   schedule_at: string,
