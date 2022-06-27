@@ -4,4 +4,4 @@ Contact tracking application that uses BLE technology to scan, broadcast, and th
 
 ## Install
 
-Download APK: [here](https://drive.google.com/file/d/1AGLDm2vmw70AYWX46rkbmqa6sxbOvGuu/view?usp=sharing)
+Download APK: [here](https://drive.google.com/file/d/134l15_dTVjmmQS0ZrLapi1aARkbG3ot7/view?usp=sharing)
