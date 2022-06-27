@@ -42,8 +42,6 @@ const RegisterComponent = ({}) => {
   useEffect(() => {
     const run = async () => {
       if (data?.insert_User_one?.user_id) {
-        console.log('Created ID', data?.insert_User_one?.user_id);
-
         const user_id = await getAppKey(data?.insert_User_one?.user_id);
 
         setup('uuid', user_id);

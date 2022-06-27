@@ -26,16 +26,13 @@ const Img_set = {
 const Home = () => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
   const {uuid: user_id} = useDevice();
-  const {loading, data} = useQuery(GET_RECENT_EXPOSURES, {
+  const {data} = useQuery(GET_RECENT_EXPOSURES, {
     pollInterval: 500,
     variables: {
       user_id,
     },
   });
-  if (data) {
-    console.log(data);
-    console.log();
-  }
+
   // console.log(loading, data, error);
   return (
     <SafeAreaView>
@@ -45,7 +42,12 @@ const Home = () => {
         </View>
         <View style={homeStyles.row}>
           <Text style={{color: '#ffffff'}}>Recent Exposures</Text>
-          {!loading && !data ? (
+          {data && data?.length ? (
+            <FlatList
+              data={data ? transformExposureData(user_id, data) : []}
+              renderItem={ListItem}
+            />
+          ) : (
             <View style={homeStyles.listItemMainStyle}>
               <Text
                 style={{
@@ -53,16 +55,10 @@ const Home = () => {
                   marginVertical: 7,
                   textAlign: 'center',
                 }}>
-                No recent exposures. Stay Safe!!!
+                No recent exposures. Stay Safe!
               </Text>
             </View>
-          ) : null}
-          {!loading && data ? (
-            <FlatList
-              data={data ? transformExposureData(user_id, data) : []}
-              renderItem={ListItem}
-            />
-          ) : null}
+          )}
         </View>
       </View>
     </SafeAreaView>

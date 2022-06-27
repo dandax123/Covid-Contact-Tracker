@@ -111,7 +111,6 @@ const Entry = ({children}: AuxProps) => {
     );
     Notifications.events().registerNotificationOpened(
       (notification: Notification, completion) => {
-        console.log(`Notification opened: ${notification.payload}`);
         completion();
       },
     );
@@ -143,7 +142,6 @@ const Entry = ({children}: AuxProps) => {
   }, [ready_to_serve]);
 
   useEffect(() => {
-    console.log('to start');
     if (bluetooth_active && location_active && ready_to_serve) {
       start();
     }
@@ -154,14 +152,12 @@ const Entry = ({children}: AuxProps) => {
     if (state.logging) {
       return;
     }
-    console.log(uuid, 'Registering Listener');
 
     eventEmitter.addListener('onDeviceFound', async event => {
       // console.log('onDeviceFound', event);
       if (event.serviceUuids) {
         await forEachSeries(event.serviceUuids, async (x: string) => {
           if (x && x.endsWith('00')) {
-            console.log('New device found');
             await handle_device_discovery({
               uuid: x,
               contact_time: new Date(),
@@ -171,12 +167,10 @@ const Entry = ({children}: AuxProps) => {
       }
     });
     if (uuid !== '' && bluetooth_active && location_active) {
-      console.log(uuid, 'Starting Advertising');
       BLEAdvertiser.broadcast(uuid, MANUF_DATA, {})
         .then(sucess => console.log(uuid, 'Adv Successful', sucess))
         .catch(error => console.log(uuid, 'Adv Error', error));
 
-      console.log(uuid, 'Starting Scanner');
       BLEAdvertiser.scan(MANUF_DATA, {
         scanMode: 2,
       })
@@ -189,11 +183,9 @@ const Entry = ({children}: AuxProps) => {
   };
 
   const stop = () => {
-    console.log(uuid, 'Removing Listener');
     // onDeviceFound.remove();
     // delete onDeviceFound;
 
-    console.log(uuid, 'Stopping Broadcast');
     BLEAdvertiser.stopBroadcast()
       .then(sucess => console.log(uuid, 'Stop Broadcast Successful', sucess))
       .catch(error => console.log(uuid, 'Stop Broadcast Error', error));

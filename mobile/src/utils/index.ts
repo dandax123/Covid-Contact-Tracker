@@ -103,7 +103,7 @@ export const transformExposureData = (
   },
 ): Array<Exposure> => {
   const contacts = data.Contact;
-  console.log(contacts[0].Primary_User_Contact);
+
   const res: Exposure[] = contacts
     .map(y => [
       {

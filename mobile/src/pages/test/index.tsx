@@ -29,7 +29,6 @@ const Test = () => {
   );
 
   useEffect(() => {
-    console.log(prevTestData);
     if (prevTestData?.CovidTest?.length === 1) {
       const time = new Date(prevTestData?.CovidTest[0]?.test_time);
       if (Math.abs(time.getTime() - new Date().getTime()) > c7_DAYS) {
@@ -70,7 +69,7 @@ const Test = () => {
         />
         {!takeTest && !testLoading ? (
           <Text style={testStyles.mainText}>
-            You have shared a positive diagnosis in the last 7 days.
+            You shared a positive diagnosis in the last 7 days.
           </Text>
         ) : null}
       </View>
