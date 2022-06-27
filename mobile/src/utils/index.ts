@@ -101,9 +101,9 @@ export const transformExposureData = (
       },
     ];
   },
-): Array<Exposure> => {
+): Exposure[] => {
   const contacts = data.Contact;
-
+  console.log('here', data);
   const res: Exposure[] = contacts
     .map(y => [
       {

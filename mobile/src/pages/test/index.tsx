@@ -14,26 +14,27 @@ import {testStyles} from './styles';
 const c7_DAYS = 6.048e8;
 const Test = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [takeTest, setTakeTest] = useState(true);
+  const [canTtakeTest, setTakeTest] = useState(true);
   const {uuid} = useDevice();
   const [createTest] = useMutation(COVID_TEST, {
     refetchQueries: [{query: GET_LAST_COVID_TEST}, 'get_lastest_user_test'],
   });
-  const {data: prevTestData, loading: testLoading} = useQuery(
-    GET_LAST_COVID_TEST,
-    {
-      variables: {
-        user: uuid,
-      },
+  const {data: prevTestData} = useQuery(GET_LAST_COVID_TEST, {
+    variables: {
+      user: uuid,
     },
-  );
+  });
 
   useEffect(() => {
-    if (prevTestData?.CovidTest?.length === 1) {
+    if (prevTestData?.CovidTest?.length) {
       const time = new Date(prevTestData?.CovidTest[0]?.test_time);
-      if (Math.abs(time.getTime() - new Date().getTime()) > c7_DAYS) {
+      if (Math.abs(time.getTime() - new Date().getTime()) < c7_DAYS) {
         setTakeTest(true);
+      } else {
+        setTakeTest(false);
       }
+    } else {
+      setTakeTest(false);
     }
   }, [prevTestData]);
   const handleSubmit = () => {
@@ -65,9 +66,9 @@ const Test = () => {
           title={'SHARE YOUR POSITIVE DIAGNOSIS'}
           containerStyle={testStyles.shareButton}
           onPress={() => setIsVisible(true)}
-          disabled={!takeTest && !testLoading}
+          disabled={canTtakeTest}
         />
-        {!takeTest && !testLoading ? (
+        {canTtakeTest ? (
           <Text style={testStyles.mainText}>
             You shared a positive diagnosis in the last 7 days.
           </Text>

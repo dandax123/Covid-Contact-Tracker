@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 // import {useQuery} from '@apollo/client';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Button} from '@rneui/themed';
@@ -26,14 +26,20 @@ const Img_set = {
 const Home = () => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
   const {uuid: user_id} = useDevice();
-  const {data} = useQuery(GET_RECENT_EXPOSURES, {
+  const [mainData, setMainData] = useState<Array<Exposure>>([]);
+  const {data, loading} = useQuery(GET_RECENT_EXPOSURES, {
     pollInterval: 500,
     variables: {
       user_id,
     },
   });
-
-  // console.log(loading, data, error);
+  useEffect(() => {
+    if (data) {
+      setMainData(() => transformExposureData(user_id, data));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, loading]);
+  // console.log(data);
   return (
     <SafeAreaView>
       <View style={homeStyles.body}>
@@ -42,11 +48,8 @@ const Home = () => {
         </View>
         <View style={homeStyles.row}>
           <Text style={{color: '#ffffff'}}>Recent Exposures</Text>
-          {data && data?.length ? (
-            <FlatList
-              data={data ? transformExposureData(user_id, data) : []}
-              renderItem={ListItem}
-            />
+          {mainData?.length ? (
+            <FlatList data={mainData} renderItem={ListItem} />
           ) : (
             <View style={homeStyles.listItemMainStyle}>
               <Text
