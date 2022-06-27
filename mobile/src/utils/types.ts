@@ -3,6 +3,8 @@ export type Device = {
   contact_time: Date;
 };
 export type Exposure = {
-  user_id: string;
+  contact_id: string;
   contact_time: string;
+  first_name: string;
+  last_name: string;
 };

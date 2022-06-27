@@ -59,7 +59,7 @@ router.post("/new_cvtest", async (req: Request, res: Response) => {
     if (!data.test_status) {
       return res.json({ success: true });
     }
-    const last_14_days = moment(data.test_time).subtract(14, "d").toISOString();
+    const last_14_days = moment(data.test_time).subtract(7, "d").toISOString();
     const { device_id: devices, user_id: users } =
       await get_user_contacts_by_date(data.user_id, last_14_days);
 

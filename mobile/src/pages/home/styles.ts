@@ -29,6 +29,19 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 50,
     margin: 8,
   },
+  listItemMainStyle: {
+    backgroundColor: '#17202A',
+    padding: 10,
+    marginVertical: 8,
+    // height: '100%',
+    borderWidth: 0,
+    borderRadius: 5,
+  },
+  listItemTextStyle: {
+    color: '#ffffff',
+    fontSize: 16,
+    textTransform: 'capitalize',
+  },
   cardMainStyle: {
     // backgroundColor: '#2C4578',
     backgroundColor: '#17202A',
@@ -78,6 +91,13 @@ export const homeStyles = StyleSheet.create({
     margin: 4,
     borderWidth: 0,
   },
+  iconTextStyle: {
+    // justifyContent: 'center',
+    flexDirection: 'row',
+    marginVertical: 5,
+    padding: 0,
+  },
+
   row: {
     flex: 1,
   },

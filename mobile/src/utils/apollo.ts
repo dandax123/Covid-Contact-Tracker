@@ -13,17 +13,8 @@ import {ApolloClient, InMemoryCache, HttpLink} from '@apollo/client';
 const newApolloclient = () => {
   const link = new HttpLink({
     uri: PROD_HASURA_URL,
-    // headers: {
-    //   'x-hasura-admin-secret': HASURA_ADMIN_SECRET,
-    //   // 'content-type': 'application/json',
-    // },
   });
 
-  // const cache = new InMemoryCache();
-  // const client = new ApolloClient({
-  //   link,
-  //   cache,
-  // });
   const client = new ApolloClient({
     link,
     cache: new InMemoryCache(),

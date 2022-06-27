@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 // import {useQuery} from '@apollo/client';
 import React from 'react';
 import {Text, View} from 'react-native';
@@ -9,9 +10,13 @@ import {homeStyles} from './styles';
 // import {FETCH_USERS} from '../../graphql/queries';
 
 import useBluetoothState from '../../store/useBluetoothState';
-import {requestPermission} from '../../utils';
+import {requestPermission, transformExposureData} from '../../utils';
 import {FlatList} from 'react-native-gesture-handler';
 import {Exposure} from '../../utils/types';
+import {useQuery} from '@apollo/client';
+import {GET_RECENT_EXPOSURES} from '../../graphql/queries';
+import useDevice from '../../store/useDevices';
+import {Icon} from '@rneui/themed';
 
 const Img_set = {
   good: require('../../utils/img/good_state.jpeg'),
@@ -20,7 +25,18 @@ const Img_set = {
 
 const Home = () => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
-
+  const {uuid: user_id} = useDevice();
+  const {loading, data} = useQuery(GET_RECENT_EXPOSURES, {
+    pollInterval: 500,
+    variables: {
+      user_id,
+    },
+  });
+  if (data) {
+    console.log(data);
+    console.log();
+  }
+  // console.log(loading, data, error);
   return (
     <SafeAreaView>
       <View style={homeStyles.body}>
@@ -28,16 +44,52 @@ const Home = () => {
           <StatusComponent enabled={bluetooth_active && location_active} />
         </View>
         <View style={homeStyles.row}>
-          <Text>Recent Exposures</Text>
-          <FlatList data={[]} renderItem={ListItem} />
+          <Text style={{color: '#ffffff'}}>Recent Exposures</Text>
+          {!loading && !data ? (
+            <View style={homeStyles.listItemMainStyle}>
+              <Text
+                style={{
+                  ...homeStyles.listItemTextStyle,
+                  marginVertical: 7,
+                  textAlign: 'center',
+                }}>
+                No recent exposures. Stay Safe!!!
+              </Text>
+            </View>
+          ) : null}
+          {!loading && data ? (
+            <FlatList
+              data={data ? transformExposureData(user_id, data) : []}
+              renderItem={ListItem}
+            />
+          ) : null}
         </View>
       </View>
     </SafeAreaView>
   );
 };
 
-const ListItem: React.FC<{item: Exposure}> = ({}) => {
-  return <></>;
+const ListItem: React.FC<{item: Exposure}> = ({item}) => {
+  return (
+    <View key={item.contact_id} style={homeStyles.listItemMainStyle}>
+      <Text style={homeStyles.listItemTextStyle}>
+        {item.first_name} {item.last_name}
+      </Text>
+      <View style={homeStyles.iconTextStyle}>
+        <View style={{flex: 1}}>
+          <Icon
+            name="clock"
+            type="feather"
+            size={17}
+            iconStyle={{color: '#ffffff', margin: 0, padding: 0}}
+          />
+        </View>
+        <View style={{flex: 9}}>
+          <Text>{item.contact_time}</Text>
+        </View>
+      </View>
+    </View>
+  );
 };
 const StatusComponent: React.FC<{enabled: boolean}> = ({enabled}) => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);

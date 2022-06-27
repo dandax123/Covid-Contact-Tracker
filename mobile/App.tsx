@@ -70,7 +70,7 @@ const App = () => {
                       <MaterialCommunityIcons
                         name={icons[route.name]}
                         color={color}
-                        size={30}
+                        size={26}
                       />
                     );
                   },

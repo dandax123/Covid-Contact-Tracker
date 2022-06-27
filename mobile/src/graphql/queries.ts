@@ -36,13 +36,24 @@ export const GET_RECENT_EXPOSURES = gql`
   query get_recent_exposure($user_id: uuid!) {
     Contact(
       where: {
-        _or: [{primary_user: $user_id}, {secondary_user: $user_id}]
-        warn_status: true
+        _or: [
+          {primary_user: {_eq: $user_id}}
+          {secondary_user: {_eq: $user_id}}
+        ]
+        warn_status: {_eq: true}
       }
     ) {
       contact_id
-      primary_user
-      secondary_user
+      Primary_User_Contact {
+        user_id
+        first_name
+        last_name
+      }
+      Secondary_User_Contact {
+        user_id
+        first_name
+        last_name
+      }
       contact_time
     }
   }

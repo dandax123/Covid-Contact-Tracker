@@ -19,6 +19,7 @@ import {useMutation} from '@apollo/client';
 import {
   ADD_NEW_CONTACT,
   check_contact_made,
+  GET_RECENT_EXPOSURES,
   UPDATE_LAST_SEEN,
 } from './graphql/queries';
 import {Device} from './utils/types';
@@ -38,8 +39,12 @@ interface AuxProps {
 
 const Entry = ({children}: AuxProps) => {
   // const [createNewUser] = useMutation(CREATE_NEW_USER_WITH_DEVICE);
-  const [createNewContact] = useMutation(ADD_NEW_CONTACT);
-  const [updateLastSeen] = useMutation(UPDATE_LAST_SEEN);
+  const [createNewContact] = useMutation(ADD_NEW_CONTACT, {
+    refetchQueries: [{query: GET_RECENT_EXPOSURES}, 'get_recent_exposures'],
+  });
+  const [updateLastSeen] = useMutation(UPDATE_LAST_SEEN, {
+    refetchQueries: [{query: GET_RECENT_EXPOSURES}, 'get_recent_exposures'],
+  });
   const {changeDeviceState, bluetooth_active, location_active} =
     useBluetoothState();
 
