@@ -28,7 +28,7 @@ import useSetup from './store/useSetup';
 // Uses the Apple code to pick up iPhones
 const APPLE_ID = 0x241c;
 const MANUF_DATA = [1, 0];
-const c15_MINS = 1000 * 60 * 10;
+const c10_MINS = 1000 * 60 * 10;
 
 BLEAdvertiser.setCompanyId(APPLE_ID);
 
@@ -46,26 +46,12 @@ const Entry = ({children}: AuxProps) => {
   const {setup: deviceSetup, uuid, devices, update_device} = useDevice();
   const {ready_to_serve} = useSetup();
   const [state, setState] = useState({logging: false});
-  // const {data: user_exist, loading} = useQuery(CHECK_USER_EXIST, {
-  //   variables: {
-  //     user_id: uuid,
-  //   },
-  // });
+  // console.log(uuid);
   const eventEmitter = new NativeEventEmitter();
   useEffect(() => {
     const setup = async () => {
       const app_key = await getAppKey();
       deviceSetup('uuid', app_key);
-
-      // if (!bluetooth_active || !location_active) {
-      //   const result = await requestPermission();
-      //   if (result.bluetooth) {
-      //     changeDeviceState('bluetooth_active', true);
-      //   }
-      //   if (result.location) {
-      //     changeDeviceState('location_active', true);
-      //   }
-      // }
     };
     setup();
 
@@ -217,14 +203,6 @@ const Entry = ({children}: AuxProps) => {
     });
   };
 
-  // const short = (str: string) => {
-  //   return (
-  //     str.substring(0, 4) +
-  //     ' ... ' +
-  //     str.substring(str.length - 4, str.length)
-  //   ).toUpperCase();
-  // };
-
   const handle_device_discovery = async (device: Device) => {
     //new_contact
     const is_old_contact = devices.get(device.uuid);
@@ -233,8 +211,7 @@ const Entry = ({children}: AuxProps) => {
       const timeDiff = Math.abs(
         is_old_contact.contact_time.getTime() - device.contact_time.getTime(),
       );
-      if (timeDiff > c15_MINS) {
-        console.log('here');
+      if (timeDiff > c10_MINS) {
         update_device(device);
         updateLastSeen({
           variables: {

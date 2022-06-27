@@ -13,6 +13,7 @@ import useSetup from '../../store/useSetup';
 
 import * as Yup from 'yup';
 import {useState} from 'react';
+import {getAppKey} from '../../utils/key_storage';
 
 const logo = require('../../utils/img/logo.png');
 
@@ -31,7 +32,7 @@ const registerSchema = Yup.object().shape({
     .required('Required'),
 });
 const RegisterComponent = ({}) => {
-  const {uuid, token_id} = useDevice();
+  const {token_id, setup} = useDevice();
   const {setupComplete} = useSetup();
   const [id_error, setIdError] = useState(false);
   const [createUser, {loading, data, error}] = useMutation(
@@ -39,13 +40,21 @@ const RegisterComponent = ({}) => {
   );
 
   useEffect(() => {
-    if (!loading && data?.insert_User_one?.user_id) {
-      setupComplete();
-    } else if (!loading && error?.message?.includes('Uniqueness violation')) {
-      setIdError(true);
-    }
+    const run = async () => {
+      if (data?.insert_User_one?.user_id) {
+        console.log('Created ID', data?.insert_User_one?.user_id);
+
+        const user_id = await getAppKey(data?.insert_User_one?.user_id);
+
+        setup('uuid', user_id);
+        setupComplete();
+      } else if (error?.message?.includes('Uniqueness violation')) {
+        setIdError(true);
+      }
+    };
+    run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [data]);
   const handleFormSubmit = (values: {
     first_name: string;
     last_name: string;
@@ -53,10 +62,10 @@ const RegisterComponent = ({}) => {
   }) => {
     const {first_name, last_name, id} = values;
 
-    if (uuid !== '' && token_id !== '') {
+    if (token_id !== '') {
       createUser({
         variables: {
-          user_id: uuid,
+          // user_id: uuid,
           device_id: token_id,
           first_name,
           last_name,

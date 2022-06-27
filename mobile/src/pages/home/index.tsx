@@ -10,11 +10,14 @@ import {homeStyles} from './styles';
 
 import useBluetoothState from '../../store/useBluetoothState';
 import {requestPermission} from '../../utils';
+import {FlatList} from 'react-native-gesture-handler';
+import {Exposure} from '../../utils/types';
 
 const Img_set = {
   good: require('../../utils/img/good_state.jpeg'),
   bad: require('../../utils/img/bad_state.jpeg'),
 };
+
 const Home = () => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
 
@@ -24,12 +27,18 @@ const Home = () => {
         <View style={homeStyles.row}>
           <StatusComponent enabled={bluetooth_active && location_active} />
         </View>
-        <View style={homeStyles.row}></View>
+        <View style={homeStyles.row}>
+          <Text>Recent Exposures</Text>
+          <FlatList data={[]} renderItem={ListItem} />
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
+const ListItem: React.FC<{item: Exposure}> = ({}) => {
+  return <></>;
+};
 const StatusComponent: React.FC<{enabled: boolean}> = ({enabled}) => {
   const {bluetooth_active, location_active} = useBluetoothState(state => state);
   const handleButtonPress = async () => {

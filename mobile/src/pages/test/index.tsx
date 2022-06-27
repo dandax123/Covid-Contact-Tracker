@@ -60,7 +60,7 @@ const Test = () => {
         </Text>
         <Text style={testStyles.mainText}>
           Users will be notified that they have been exposed the virus during
-          the past 14 days to take the necessary measure.
+          the past 7 days to take the necessary measure.
         </Text>
         <Button
           title={'SHARE YOUR POSITIVE DIAGNOSIS'}
@@ -69,10 +69,12 @@ const Test = () => {
           disabled={!takeTest && !testLoading}
         />
         {!takeTest && !testLoading ? (
-          <Text>You have taken a test in the last 7 days.</Text>
+          <Text style={testStyles.mainText}>
+            You have taken a test in the last 7 days.
+          </Text>
         ) : null}
       </View>
-      <View style={testStyles.testResultBody}></View>
+
       <Dialog
         isVisible={isVisible}
         overlayStyle={testStyles.dialogStyle}

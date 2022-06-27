@@ -34,9 +34,10 @@ export const testStyles = StyleSheet.create({
     fontSize: 16,
   },
   mainTextBody: {
-    flex: 2,
+    flex: 1,
     height: '100%',
-    justifyContent: 'center',
+    paddingHorizontal: 5,
+    // justifyContent: 'center',
   },
   testResultBody: {
     flex: 3,

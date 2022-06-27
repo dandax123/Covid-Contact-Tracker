@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import UUIDGenerator from 'react-native-uuid-generator';
+import {update_user_id} from '../graphql/queries';
 const storeData = async (value: string) => {
   try {
     await AsyncStorage.setItem('storage_Key', value);
@@ -8,21 +8,21 @@ const storeData = async (value: string) => {
   }
 };
 
-export const getAppKey = async (): Promise<string> => {
-  let new_value = '';
-  UUIDGenerator.getRandomUUID(async (newUid: string) => {
-    new_value = newUid.slice(0, -2) + '00';
-  });
+export const getAppKey = async (user_id = ''): Promise<string> => {
   try {
-    const value = await AsyncStorage.getItem('storage_Key');
-    if (value) {
-      return value;
-    } else {
-      await storeData(new_value);
-      return new_value;
+    if (user_id !== '') {
+      const new_UID = user_id.slice(0, -2) + '00';
+      await update_user_id(user_id, new_UID);
+      await storeData(new_UID);
     }
+
+    const value = await AsyncStorage.getItem('storage_Key');
+    if (value && value !== '') {
+      return value;
+    }
+    throw new Error("Can't retrieve user Id");
   } catch (e) {
-    return new_value;
+    throw new Error("Can't retrieve user Id");
     // error reading value
   }
 };

@@ -25,6 +25,28 @@ export const CHECK_USER_EXIST = `
     }
   }
 `;
+const UPDATE_USER_ID = `mutation update_user_id($user_id: uuid!, $new_user_id: uuid!) {
+  update_User_by_pk(pk_columns: {user_id: $user_id}, _set: {
+    user_id: $new_user_id
+  } ){
+    user_id
+  } 
+}`;
+export const GET_RECENT_EXPOSURES = gql`
+  query get_recent_exposure($user_id: uuid!) {
+    Contact(
+      where: {
+        _or: [{primary_user: $user_id}, {secondary_user: $user_id}]
+        warn_status: true
+      }
+    ) {
+      contact_id
+      primary_user
+      secondary_user
+      contact_time
+    }
+  }
+`;
 export const GET_LAST_COVID_TEST = gql`
   query get_lastest_user_test($user: uuid!) {
     CovidTest(
@@ -71,7 +93,6 @@ export const CHECK_CONTACT_EXIST = `
 
 export const CREATE_NEW_USER_WITH_DEVICE = gql`
   mutation new_user(
-    $user_id: uuid!
     $device_id: String!
     $first_name: String!
     $last_name: String!
@@ -79,7 +100,6 @@ export const CREATE_NEW_USER_WITH_DEVICE = gql`
   ) {
     insert_User_one(
       object: {
-        user_id: $user_id
         covid_status: false
         first_name: $first_name
         last_name: $last_name
@@ -143,6 +163,17 @@ export const check_user_exist = async (user_id: string): Promise<boolean> => {
     return Boolean(res.data.User_aggregate.aggregate.count);
   } catch (err) {}
   return false;
+};
+
+export const update_user_id = async (user_id: string, new_user_id: string) => {
+  try {
+    await ApiCall('update_user_id', UPDATE_USER_ID, {
+      user_id,
+      new_user_id,
+    });
+  } catch (err) {
+    console.error(err);
+  }
 };
 export const check_contact_made = async (
   primary_user: string,
